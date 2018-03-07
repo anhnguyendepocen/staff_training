@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-03-07 Wed 10:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Functions and iteration</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dale Barr" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../index.html"> UP </a>
+ |
+ <a accesskey="H" href="../index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">Functions and iteration</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org018f74b">Setting up the environment</a></li>
+<li><a href="#org715540b">Reading in a bunch of files</a></li>
+<li><a href="#org0a99b73">Performing a permutation test</a></li>
+<li><a href="#org60336d5">Testing for differences between groups</a></li>
+<li><a href="#orga487535">Testing for change on STARS subscales</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org018f74b" class="outline-2">
+<h2 id="org018f74b">Setting up the environment</h2>
+<div class="outline-text-2" id="text-org018f74b">
+<p>
+In this session, we will be looking at how to write your own custom
+functions to perform tasks, and how to iterate those tasks repeatedly
+using various iteration functionality in R.
+</p>
+
+<p>
+We will be working with the STARS survey data, which measures
+statistics anxiety, and relating the survey data to class performance
+and which software students chose (R or SPSS).
+</p>
+
+<p>
+Download the data <a href="fdata.zip">here</a> and unzip the archive into your working
+directory (it will expand into two subdirectories: <code>/data</code> and
+<code>/stars_anon</code>).
+</p>
+
+<p>
+If you want the full R script for this session, click <a href="script.R">here</a>.
+</p>
+
+<p>
+First, let&rsquo;s load the packages we will need.  You will probably
+need to install the additional packages <code>purrr</code> and <code>broom</code> using:
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">install.packages(c(<span style="color: #8b2252;">"purrr"</span>, <span style="color: #8b2252;">"broom"</span>))
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>)
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"tidyr"</span>)
+<span style="color: #b22222;">## </span><span style="color: #b22222;">NB: dev version of dplyr (0.4.3.9001) breaks tidyr::nest()</span>
+<span style="color: #b22222;">##     </span><span style="color: #b22222;">if you get the error "No variables selected" when using tidyr::nest(),</span>
+<span style="color: #b22222;">##     </span><span style="color: #b22222;">downgrade back to CRAN version of dplyr (0.4.3) using:</span>
+<span style="color: #b22222;">##     </span><span style="color: #b22222;">install.packages("dplyr")</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"purrr"</span>)
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"broom"</span>)
+
+survey <span style="color: #008b8b;">&lt;-</span> readRDS(<span style="color: #8b2252;">"stars_anon/survey.rds"</span>)
+scales <span style="color: #008b8b;">&lt;-</span> readRDS(<span style="color: #8b2252;">"stars_anon/subscales.rds"</span>)
+software <span style="color: #008b8b;">&lt;-</span> readRDS(<span style="color: #8b2252;">"stars_anon/software.rds"</span>)
+marks <span style="color: #008b8b;">&lt;-</span> readRDS(<span style="color: #8b2252;">"stars_anon/marks.rds"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in gzfile(file, "rb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "rb") :
+  cannot open compressed file 'stars_anon/survey.rds', probable reason 'No such file or directory'
+Error in gzfile(file, "rb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "rb") :
+  cannot open compressed file 'stars_anon/subscales.rds', probable reason 'No such file or directory'
+Error in gzfile(file, "rb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "rb") :
+  cannot open compressed file 'stars_anon/software.rds', probable reason 'No such file or directory'
+Error in gzfile(file, "rb") : cannot open the connection
+In addition: Warning message:
+In gzfile(file, "rb") :
+  cannot open compressed file 'stars_anon/marks.rds', probable reason 'No such file or directory'
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org715540b" class="outline-2">
+<h2 id="org715540b">Reading in a bunch of files</h2>
+<div class="outline-text-2" id="text-org715540b">
+<p>
+For this first part, we&rsquo;re going to read a bunch of CSV files stored
+in the <code>data/</code> subdirectory.  There is one data file for each student.
+We need to bring all of the data into one data frame so that we can
+perform some analysis.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">read in all the files stored in data/</span>
+<span style="color: #0000ff;">read_survey_data</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>(x) {
+    fname <span style="color: #008b8b;">&lt;-</span> paste(<span style="color: #8b2252;">"data"</span>, x, sep = <span style="color: #8b2252;">"/"</span>)
+    asid <span style="color: #008b8b;">&lt;-</span> sub(<span style="color: #8b2252;">"\\.csv$"</span>, <span style="color: #8b2252;">""</span>, x) 
+    read.csv(fname, stringsAsFactors = <span style="color: #228b22;">FALSE</span>) <span style="color: #008b8b;">%&gt;%</span>
+        mutate(ASID = asid)
+}
+
+my_files <span style="color: #008b8b;">&lt;-</span> list.files(<span style="color: #8b2252;">"data"</span>)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">first method: a for loop</span>
+<span style="color: #b22222;">##   </span><span style="color: #b22222;">followed by dplyr::bind_rows()</span>
+dat <span style="color: #008b8b;">&lt;-</span> list()
+<span style="color: #a020f0;">for</span> (i <span style="color: #a020f0;">in</span> seq_along(my_files)) {
+    dat[[i]] <span style="color: #008b8b;">&lt;-</span> read_survey_data(my_files[i])
+}
+survey <span style="color: #008b8b;">&lt;-</span> bind_rows(dat)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">second method: base::lapply()</span>
+<span style="color: #b22222;">##   </span><span style="color: #b22222;">followed by dplyr::bind_rows()</span>
+dat <span style="color: #008b8b;">&lt;-</span> lapply(my_files, read_survey_data)
+survey <span style="color: #008b8b;">&lt;-</span> bind_rows(dat)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">third method: purrr::map()</span>
+<span style="color: #b22222;">##   </span><span style="color: #b22222;">followed by dplyr::bind_rows()</span>
+dat <span style="color: #008b8b;">&lt;-</span> purrr::map(my_files, read_survey_data)
+survey <span style="color: #008b8b;">&lt;-</span> dplyr::bind_rows(dat)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">fourth method: plyr::ldply()</span>
+survey <span style="color: #008b8b;">&lt;-</span> plyr::ldply(my_files, read_survey_data)
+</code></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0a99b73" class="outline-2">
+<h2 id="org0a99b73">Performing a permutation test</h2>
+<div class="outline-text-2" id="text-org0a99b73">
+<p>
+Here the goal is to investigate whether the final grades were
+significantly different for R versus SPSS users.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">change from long to wide and calculate final score</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">60% exam, 40% homework</span>
+fmarks <span style="color: #008b8b;">&lt;-</span> marks <span style="color: #008b8b;">%&gt;%</span>
+    spread(component, mark) <span style="color: #008b8b;">%&gt;%</span>
+    mutate(Final = .6 * Exam_Pts + .4 * Homework_Pts) <span style="color: #008b8b;">%&gt;%</span>
+    select(ASID, Final)
+
+fsoft <span style="color: #008b8b;">&lt;-</span> fmarks <span style="color: #008b8b;">%&gt;%</span>
+    inner_join(software, <span style="color: #8b2252;">"ASID"</span>)
+
+parm_t <span style="color: #008b8b;">&lt;-</span> t.test(Final ~ software, data = fsoft)
+
+hist(fsoft$Final)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">1. randomly re-assign values of 'software' to each row</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">2. calculate means for each software group</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">3. store the result</span>
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">build a function</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">x &lt;- fsoft</span>
+<span style="color: #0000ff;">mean_diff</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>(x, permute = <span style="color: #228b22;">TRUE</span>) {
+    <span style="color: #a020f0;">if</span> (permute) {
+        x$software <span style="color: #008b8b;">&lt;-</span> sample(x$software)
+    }
+
+    x_means <span style="color: #008b8b;">&lt;-</span> x <span style="color: #008b8b;">%&gt;%</span>
+        group_by(software) <span style="color: #008b8b;">%&gt;%</span> summarise(m_Final = mean(Final))
+
+    x_means$m_Final[1] - x_means$m_Final[2]
+}
+
+orig <span style="color: #008b8b;">&lt;-</span> mean_diff(fsoft, <span style="color: #228b22;">FALSE</span>)
+
+px <span style="color: #008b8b;">&lt;-</span> c(orig, replicate(9999, mean_diff(fsoft)))
+
+n_ge <span style="color: #008b8b;">&lt;-</span> sum(abs(px) &gt;= abs(px[1]))
+pval <span style="color: #008b8b;">&lt;-</span> n_ge / length(px)
+
+tidy(parm_t)
+cat(<span style="color: #8b2252;">"permutation p-value: "</span>, round(pval, 4), <span style="color: #8b2252;">"\n"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'marks' not found
+Error in eval(lhs, parent, parent) : object 'fmarks' not found
+Error in eval(m$data, parent.frame()) : object 'fsoft' not found
+Error in hist(fsoft$Final) : object 'fsoft' not found
+Error in eval(lhs, parent, parent) : object 'fsoft' not found
+Error: object 'orig' not found
+Error: object 'px' not found
+Error: object 'n_ge' not found
+Error in tidy(parm_t) : object 'parm_t' not found
+Error in cat("permutation p-value: ", round(pval, 4), "\n") : 
+  object 'pval' not found
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org60336d5" class="outline-2">
+<h2 id="org60336d5">Testing for differences between groups</h2>
+<div class="outline-text-2" id="text-org60336d5">
+<p>
+Now we&rsquo;ll test whether R and SPSS users differ in anxiety
+across the subscales.  There are 6 subscales, so we&rsquo;ll need to do 6
+different independent-samples t.tests.  Our analysis will use
+<code>purrr::map()</code>, <code>tidyr::nest()</code>, and <code>broom::tidy()</code> to perform
+t-tests for each individual subscale of the STARS survey.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #0000ff;">ind_ttest</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>(x) {
+    t.test(m_score ~ software, data = x)
+}
+
+allsub <span style="color: #008b8b;">&lt;-</span> survey <span style="color: #008b8b;">%&gt;%</span>
+    inner_join(scales, <span style="color: #8b2252;">"item_id"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    group_by(ASID, subscale) <span style="color: #008b8b;">%&gt;%</span>
+    summarise(m_score = mean(resp)) <span style="color: #008b8b;">%&gt;%</span>
+    ungroup()
+
+allsoft <span style="color: #008b8b;">&lt;-</span> allsub <span style="color: #008b8b;">%&gt;%</span>
+    inner_join(software, <span style="color: #8b2252;">"ASID"</span>)
+
+res <span style="color: #008b8b;">&lt;-</span> allsoft <span style="color: #008b8b;">%&gt;%</span>
+    nest(-subscale) <span style="color: #008b8b;">%&gt;%</span>
+    mutate(ttest = map(data, ind_ttest),
+           stats = map(ttest, tidy))
+
+res <span style="color: #008b8b;">%&gt;%</span>
+    unnest(stats) <span style="color: #008b8b;">%&gt;%</span>
+    select(-data, -ttest)
+</code></pre>
+</div>
+
+<pre class="example">
+Error: `by` can't contain join column `item_id` which is missing from LHS
+Error in eval(lhs, parent, parent) : object 'allsub' not found
+Error in eval(lhs, parent, parent) : object 'allsoft' not found
+Error in eval(lhs, parent, parent) : object 'res' not found
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orga487535" class="outline-2">
+<h2 id="orga487535">Testing for change on STARS subscales</h2>
+<div class="outline-text-2" id="text-orga487535">
+<p>
+In this part we will use <code>purrr::map()</code>, <code>tidyr::nest()</code>, and
+<code>broom::tidy()</code> to see if there is any change in anxiety from the
+first to the second wave.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #0000ff;">paired_ttest</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>(x) {
+    t.test(x$w1, x$w2, paired = <span style="color: #228b22;">TRUE</span>)
+}
+
+subscores <span style="color: #008b8b;">&lt;-</span> survey <span style="color: #008b8b;">%&gt;%</span>
+    inner_join(scales, <span style="color: #8b2252;">"item_id"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    group_by(ASID, wave, subscale) <span style="color: #008b8b;">%&gt;%</span>
+    summarise(m_score = mean(resp)) <span style="color: #008b8b;">%&gt;%</span>
+    ungroup()
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">only those students for whom we have data for both waves</span>
+both <span style="color: #008b8b;">&lt;-</span> subscores <span style="color: #008b8b;">%&gt;%</span>
+    select(ASID, wave) <span style="color: #008b8b;">%&gt;%</span>
+    distinct() <span style="color: #008b8b;">%&gt;%</span>
+    count(ASID) <span style="color: #008b8b;">%&gt;%</span>
+    filter(n == 2)
+
+subboth <span style="color: #008b8b;">&lt;-</span> subscores <span style="color: #008b8b;">%&gt;%</span>
+    semi_join(both, <span style="color: #8b2252;">"ASID"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    spread(wave, m_score) <span style="color: #008b8b;">%&gt;%</span>
+    nest(-subscale, .key = scores)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">TODO: show some examples of purrr::map()</span>
+subboth <span style="color: #008b8b;">%&gt;%</span>
+    mutate(model = purrr::map(scores, paired_ttest),
+           stats = purrr::map(model, broom::tidy)) <span style="color: #008b8b;">%&gt;%</span>
+    select(subscale, stats) <span style="color: #008b8b;">%&gt;%</span>
+    unnest(stats)
+</code></pre>
+</div>
+
+<pre class="example">
+Error: `by` can't contain join column `item_id` which is missing from LHS
+Error in eval(lhs, parent, parent) : object 'subscores' not found
+Error in eval(lhs, parent, parent) : object 'subscores' not found
+Error in eval(lhs, parent, parent) : object 'subboth' not found
+
+</pre>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: R Training</p>
+<p class="author">Author: Dale Barr</p>
+<p class="date">Created: 2018-03-07 Wed 10:34</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+#+BEGIN_SRC R
+  library("dplyr")
+
+  hws <- read.csv("../marking/marking_data/homework_mark.csv",
+                  stringsAsFactors = FALSE,
+                  colClasses = c("character", "numeric", "integer", "character")) %>%
+     mutate(hw = points)
+
+  exams <- read.csv("../marking/marking_data/exam.csv",
+                    stringsAsFactors = FALSE,
+                    colClasses = c("character", "character", "integer")) %>%
+     mutate(exm = points)
+
+  dat <- inner_join(hws, exams, "SID") %>%
+      select(SID, hw, exm) %>%
+      mutate(points = round(.6 * exm + .4 * hw)) %>%
+      select(SID, points)
+
+  write.csv(dat, "moodle_data/marks.csv", row.names = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R
+  full_log <- read.csv("moodle_data/full_log.csv", stringsAsFactors = FALSE)
+
+  bbb <- full_log %>%
+      filter(Event.context == "BigBlueButtonBN: Login to BBB online practical session")
+
+  slides <- full_log %>%
+      filter(Event.context == "Folder: Lecture notes")
+
+  write.csv(bbb, "moodle_data/bbb.csv", row.names = FALSE)
+  write.csv(slides, "moodle_data/slides.csv", row.names = FALSE)
+#+END_SRC

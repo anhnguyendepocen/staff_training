@@ -1,0 +1,943 @@
+#+title: Analyzing student online activity in the Moodle logs
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:t H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R3* :exports both :results output :tangle junk.R
+
+* Let's review!
+
+In the last few lessons, we've been focusing on basic steps in data processing using the =dplyr= and =tidyr= add-on packages.
+
+Unless otherwise stated, all functions discussed below can be found in the =dplyr= package.
+
+Please see [[https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf#][R Studio's data wrangling cheatsheet]] for further information and examples.
+
+** One-table operations
+
+*** Column-wise operations
+
+| =select()= | determine which columns appear in output |
+| =rename()= | change the name of column(s)             |
+| =mutate()= | create a new column                      |
+
+#+HTML: <p></p>
+
+*** Row-wise operations
+
+| =filter()=  | determine which rows appear in output                         |
+| =arrange()= | sort observations in ascending or descending (=desc()=) order |
+| =slice()=   | pull out rows by observation number                           |
+
+#+HTML: <p></p>
+
+*** Data summaries
+
+| =count()=                       | count number of different values for a variable |
+| =summarise()=                   | create data summaries                           |
+| =group_by(...) %>% summarize()= | data summaries by group                         |
+
+#+HTML: <p></p>
+
+** Reshaping data
+
+The data reshaping functions are found in the =tidyr= add-on package.
+
+| =tidyr::gather()= | go from wide to long |
+| =tidyr::spread()= | go from long to wide |
+
+** Two-table operations
+
+| =inner_join(a, b, "key")= | retain rows in a and b matching on "key" |
+| =semi_join(a, b, "key")=  | retain rows in a that match in b         |
+| =anti_join(a, b, "key")=  | retain rows in a that have no match in b |
+
+** Stringing together operations using pipes
+
+You can string together an arbitrary number of commands using the =%>%= operator.  Keep in mind that the result on the left side of the pipe is passed as the first argument to the function on the right side of the pipe.
+
+#+BEGIN_SRC R :exports code :eval never :results silent
+  library("dplyr")
+
+  ## unpiped way to do something
+  dat1 <- filter(iris, Species == "setosa")
+  dat2 <- select(dat1, Sepal.Length, Sepal.Width)
+  newdat <- arrange(dat2, Sepal.Length)
+
+  ## same, but with nested function calls (UGLY)
+  newdat <- arrange(select(filter(iris, Species == "setosa"),
+                           Sepal.Length, Sepal.Width), Sepal.Length)
+
+  ## RECOMMENDED: pipe it all together
+  newdat <- iris %>%
+      filter(Species == "setosa") %>%
+      select(Sepal.Length, Sepal.Width) %>%
+      arrange(Sepal.Length)
+#+END_SRC
+
+* Get ready
+
+We will explore whether online participation, as reflected in the Moodle activity logs, is related to overall performance in the class.  For this lesson we will be using data from my level 3 statistics class (PSYC 4037).  In particular, we'll ask:
+
+- Are students engaging with the course materials?
+- Is viewing the lecture slides associated with higher performance?
+- Is participation in the Big Blue Button online sessions associated with higher performance?
+
+** Files
+
+[[file:moodle_data.zip][Download the zip file]] containing the data for this lesson.  Remember to set your working directory to the location of the archive.  If you've forgotten how to do this, see [[../the_basics/index.html#orgheadline24][here]].  To check whether you were successful, type =list.files()= at console prompt and you should see the output below.
+
+#+BEGIN_SRC R :exports results
+  list.files("moodle_data")
+#+END_SRC
+
+#+RESULTS:
+: [1] "bbb.csv"      "full_log.csv" "marks.csv"    "slides.csv"
+
+Files in the archive:
+
+| =bbb.csv=      | Log of participation in online practical sessions (Big Blue Button) |
+| =full_log.csv= | Log containing *all* class activities in one big file               |
+| =marks.csv=    | Final marks for the course (22 point scale)                         |
+| =slides.csv=   | Log of access to lecture slides                                     |
+| =users.csv=    | Table matching student IDs to names                                 |
+
+** A few reminders before we begin
+
+*Never set your working directory in a script.*  This should always be done outside of your script.  Any data files you need should be in the same directory (or a subdirectory) of the directory where the script is stored.
+
+*The goal of analysis is to develop a reproducible script.*  You should type in your code step-by-step into an =.R= file in the text editor window.  This will include all the necessary steps to get from the raw data to the final results of your analysis.
+
+*The console is your sandbox.*  Sometimes you're not exactly sure what you need to do.  Drop down into the console window and play around until you get the command working just right, and then copy it into the script window.  Listing files, viewing data frames (with =glimpse()= or =View()=) is something that you do to check on your work, and generally should not be part of your script.
+
+*Order matters.* If you get an error message along the lines of =object 'x' not found=, you may have skipped a step.  Sometimes what happens is that you'll type something into the script window and forget to run it in the console (Ctrl+Enter), or perhaps there was an error in the command that you missed.  Trace back in your script to where =x= was defined and re-run it.
+
+*Wait for the arrow.* The console will display a =>= symbol when it is ready for input.  If you are about to start entering a command and see a =+= instead of a =>=, the console is waiting for input to finish processing the last command that was entered.  If you want to get back to the arrow, just put your cursor in the console window and press the Esc key.
+
+*R is hypersensitive to case.*  Last time, people were having trouble with the =View()= command because they were typing =view()= instead of =View()=.  When you get an error, make sure you typed in the command with the appropriate case.  With RStudio 0.99 this is less of an issue because it includes autocomplete and tool tips to remind you what you need to type, but since we only have 0.98 installed in the labs, you need to be extra careful.
+
+*Be liberal with whitespace.* R ignores any whitespace (spaces, tabs, etc) in your commands.  Whitespace makes your code much easier to read and edit, and also can help you avoid ambiguities that can give rise to bugs in your code.  Consider the statement =x<-1=.  Is that =x < -1= or =x <- 1=?  By default, R will interpret it as the latter, but unless you've memorized R's rules for parsing, you won't be able to tell the difference.  See [[http://adv-r.had.co.nz/Style.html][Hadley Wickham's style guide for R]].
+
+*Load in the add-on packages you will be using at the top of your script.*  For this exercise, we'll be using =dplyr=, =ggplot2=, and =lubridate=, so let's start by loading them in.
+
+#+BEGIN_SRC R :tangle script.R :results silent
+  library("dplyr")
+  library("ggplot2")
+  library("lubridate")  # for processing dates/times 
+#+END_SRC
+
+Note: =lubridate= is not installed on Boyd Orr machines.  You can install it temporarily using =install.packages("lubridate")=.
+
+* Loading and exploring the data
+
+The full script for this lesson can be downloaded [[http:script.R][here]].
+
+** Loading in the final scores
+
+Load in the final assessment scores for the students, and plot them.
+
+Recall that this =stringsAsFactors= argument is needed to override the default behavior, which is to read =character= fields in as data type =factor=.  (The =read_csv()= function in the =readr= package is faster and has more sensible defaults and it's worth your time to have a look.)
+
+#+BEGIN_SRC R :eval never
+  scores <- read.csv("marks.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :exports none :results silent
+  scores <- read.csv("moodle_data/marks.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R
+  head(scores)
+#+END_SRC
+
+#+RESULTS:
+:      SID points
+: 1 131260     15
+: 2 199830     19
+: 3 287616     19
+: 4 382761     17
+: 5 525500     12
+: 6 576198     22
+
+Again, we see the funny business with the leading zero being dropped from the =SID= field because R is guessing that it should be an integer rather than a character string.  So let's override this behavior with the =colClasses= argument (note the capital 'C' in the middle; in programming lingo this is called [[https://en.wikipedia.org/wiki/CamelCase][CamelCase]]).
+
+#+BEGIN_SRC R :eval never :tangle script.R
+  scores <- read.csv("marks.csv", stringsAsFactors = FALSE,
+                     colClasses = c("character", "integer"))
+#+END_SRC
+
+#+BEGIN_SRC R :exports none :results silent
+  scores <- read.csv("moodle_data/marks.csv", stringsAsFactors = FALSE,
+                     colClasses = c("character", "integer"))
+#+END_SRC
+
+#+BEGIN_SRC R 
+  head(scores)
+#+END_SRC
+
+#+RESULTS:
+:       SID points
+: 1 0131260     15
+: 2 0199830     19
+: 3 0287616     19
+: 4 0382761     17
+: 5 0525500     12
+: 6 0576198     22
+
+OK let's get a quick overview of the score distribution with a call to ggplot2.  This is just to check the data for problems, so we don't necessarily need to put this into our script.
+
+#+HEADERS: :file score_distribution.png
+#+BEGIN_SRC R :exports both :results output graphics
+  ggplot(scores, aes(points)) + geom_bar()
+#+END_SRC
+
+** Loading in user data
+
+In the table =scores=, students are identified by student ID (=SID=).  In the moodle logs, as we will see below, they are identified by their full names (=User.full.name=).  If we want to link the data in the two tables, then we need a /lookup table/ that relates IDs to names.  We have this in the =users.csv= file, which I was able to extract from the "Grades" section of Moodle.
+
+#+BEGIN_SRC R :eval never 
+  users <- read.csv("users.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :exports none :results silent
+  users <- read.csv("moodle_data/users.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R
+  head(users)
+#+END_SRC
+
+#+RESULTS:
+:   First.name  Surname ID.number
+: 1     Erfaab  Meleian   8209037
+: 2    Riaeiaa   Galaoh      5488
+: 3    Mvegamg     Aeai   5256885
+: 4      Konns Jonaysao   3577138
+: 5       Riio     Menn   8160518
+: 6        Kci   Dmrina    935486
+
+Again, the issue with student ID being read in as an integer and dropping leading zeroes.  Let's fix this by setting all columns to character with =colClasses=.  So we'll re-write the above line as:
+
+#+BEGIN_SRC R :eval never :tangle script.R
+  users <- read.csv("users.csv", stringsAsFactors = FALSE,
+                    colClasses = "character")
+#+END_SRC
+
+#+BEGIN_SRC R :exports none :results silent
+  users <- read.csv("moodle_data/users.csv", stringsAsFactors = FALSE,
+                    colClasses = "character")
+#+END_SRC
+
+#+BEGIN_SRC R
+  head(users)
+#+END_SRC
+
+#+RESULTS:
+:   First.name  Surname ID.number
+: 1     Erfaab  Meleian   8209037
+: 2    Riaeiaa   Galaoh   0005488
+: 3    Mvegamg     Aeai   5256885
+: 4      Konns Jonaysao   3577138
+: 5       Riio     Menn   8160518
+: 6        Kci   Dmrina   0935486
+
+Note that here it was not necessary to specify a data type for each column individually.  If we provide a single data type the function assumes that type should apply to all columns in the file.
+
+** Lecture slide data
+
+Now let's load in information from the logs.  First, the lecture slides.
+
+#+BEGIN_SRC R :exports none :results silent
+  slides <- read.csv("moodle_data/slides.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :exports code :eval never :tangle script.R
+  slides <- read.csv("slides.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+Let's have a look at the format of the log file.
+
+#+BEGIN_SRC R
+  head(slides)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  User.full.name            Time Affected.user         Event.context Component
+1   Mvegamg Aeai 16/12/15, 23:39             - Folder: Lecture notes    Folder
+2   Mvegamg Aeai  9/12/15, 12:23             - Folder: Lecture notes    Folder
+3   Mvegamg Aeai 26/11/15, 10:07             - Folder: Lecture notes    Folder
+4   Mvegamg Aeai 26/11/15, 09:50             - Folder: Lecture notes    Folder
+5   Mvegamg Aeai 19/11/15, 10:57             - Folder: Lecture notes    Folder
+6   Mvegamg Aeai 12/11/15, 09:35             - Folder: Lecture notes    Folder
+            Event.name
+1 Course module viewed
+2 Course module viewed
+3 Course module viewed
+4 Course module viewed
+5 Course module viewed
+6 Course module viewed
+                                                                     Description
+1 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+2 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+3 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+4 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+5 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+6 The user with id 'xx' viewed the 'folder' activity with course module id 'xx'.
+  Origin
+1    web
+2    web
+3    web
+4    web
+5    web
+6    web
+#+end_example
+
+Looking at it with =head()= results in an absolute mess.  =glimpse()= gives us a better way to view it (you can also try =View()=, note the capital 'V').
+
+#+BEGIN_SRC R
+  glimpse(slides)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Observations: 4,184
+Variables: 8
+$ User.full.name (chr) "Mvegamg Aeai", "Mvegamg Aeai", "Mvegamg Aeai", "Mve...
+$ Time           (chr) "16/12/15, 23:39", "9/12/15, 12:23", "26/11/15, 10:0...
+$ Affected.user  (chr) "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-...
+$ Event.context  (chr) "Folder: Lecture notes", "Folder: Lecture notes", "F...
+$ Component      (chr) "Folder", "Folder", "Folder", "Folder", "Folder", "F...
+$ Event.name     (chr) "Course module viewed", "Course module viewed", "Cou...
+$ Description    (chr) "The user with id 'xx' viewed the 'folder' activity ...
+$ Origin         (chr) "web", "web", "web", "web", "web", "web", "web", "we...
+#+end_example
+
+OK, this is a bit more manageable.  We can investigate what each variable means by tabulating their values using =count()=.
+
+#+BEGIN_SRC R
+  count(slides, Affected.user)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [1 x 2]
+: 
+:   Affected.user     n
+:           (chr) (int)
+: 1             -  4184
+
+#+BEGIN_SRC R
+  count(slides, Event.context)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [1 x 2]
+: 
+:           Event.context     n
+:                   (chr) (int)
+: 1 Folder: Lecture notes  4184
+
+#+BEGIN_SRC R
+  count(slides, Component)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [1 x 2]
+: 
+:   Component     n
+:       (chr) (int)
+: 1    Folder  4184
+
+#+BEGIN_SRC R
+  count(slides, Event.name)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [1 x 2]
+: 
+:             Event.name     n
+:                  (chr) (int)
+: 1 Course module viewed  4184
+
+The only useful fields here are =User.full.name= and =Time=.  Let's calculate the number of access times for each user.
+
+#+BEGIN_SRC R :tangle script.R
+  slides_n <- count(slides, User.full.name)
+#+END_SRC
+
+Let's make a histogram.
+
+#+HEADERS: :file slides_hist.png :results output graphics
+#+BEGIN_SRC R
+  ggplot(slides_n, aes(n)) + geom_bar()
+#+END_SRC
+
+One thing to keep in mind is that there may be students who never accessed the lecture notes, but these students will not appear in this histogram since there will be no record in the moodle logs for these students.  Also the fact that the slides were accessed by 244 different people in a class of 130 suggests that there were people not in the class who accessed the slides.  How can we address these issues?
+
+What we can do is a kind of "filtering join" in which we link =slides_n= to the master record of students in the table =scores=.  However, we cannot directly link =slides_n= to =scores= because they are 'keyed' differently: the former on =User.full.name=, and the latter on =SID=.  We will need to link them together via =users=, which has =SID= as well as user names.
+
+#+BEGIN_SRC R
+  head(users)
+#+END_SRC
+
+#+RESULTS:
+:   First.name  Surname ID.number
+: 1     Erfaab  Meleian   8209037
+: 2    Riaeiaa   Galaoh   0005488
+: 3    Mvegamg     Aeai   5256885
+: 4      Konns Jonaysao   3577138
+: 5       Riio     Menn   8160518
+: 6        Kci   Dmrina   0935486
+
+Immediately we are faced with the problem that we have students' first names and surnames combined within a single variable (=User.full.name=) in =slides_n=, but represented separately in =users=.  We can solve this problem by using =mutate()= to create a new field in users that combines =First.name= and =Surname=.  We will make use of the =paste()= function, which is used to concatenate chunks of text.  We will call the new field =User.full.name=, choosing the same name as the field in =slides_n= to simplify our join.
+
+#+BEGIN_SRC R 
+  users2 <- mutate(users, 
+                   User.full.name = paste(First.name, Surname, sep = " "))
+#+END_SRC
+
+While we're at it, let's rename the field =ID.number= to =SID= so that it matches the name in =scores=.  This will make the join to =scores= easier because the keys in both tables will have the same name, =SID=.  We'll re-write the above line as follows.
+
+#+BEGIN_SRC R 
+  users2 <- mutate(users, 
+                   User.full.name = paste(First.name, Surname, sep = " ")) %>%
+     rename(SID = ID.number)
+#+END_SRC
+
+Now let's reduce =users2= to the set of students in the class by joining it to =scores= on =SID=.  Again, we will just alter the line we've previously written, adding another pipe.
+
+#+BEGIN_SRC R :tangle script.R
+  users2 <- mutate(users, 
+                   User.full.name = paste(First.name, Surname, sep = " ")) %>%
+     rename(SID = ID.number) %>%
+     inner_join(scores, "SID")
+#+END_SRC
+
+Let's double check that we have 130 observations in =users2=.
+
+#+BEGIN_SRC R
+  glimpse(users2)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 130
+: Variables: 5
+: $ First.name     (chr) "Mvegamg", "Seana", "Aiioaaecrae", "Kanlecv", "Mmbie...
+: $ Surname        (chr) "Aeai", "Danraonaar", "Feal", "Ahaehh", "Bhnona", "L...
+: $ SID            (chr) "5256885", "4519492", "9674727", "7331477", "0382761...
+: $ User.full.name (chr) "Mvegamg Aeai", "Seana Danraonaar", "Aiioaaecrae Fea...
+: $ points         (int) 15, 16, 22, 20, 17, 17, 16, 15, 18, 13, 17, 21, 19, ...
+
+Next, we want to join =users2= to =slides_n= in a way such that all rows in =users2= are included, /regardless/ of whether or not they have a matching key in =slides_n=.  The reason is that it is possible that some students never accessed the lecture slides and thus will have no records in =slides_n=.  We need to do something different from an =inner_join()=, which pulls out rows with observations in /both/ tables.
+
+What we can do here is a =left_join()=.  The function =left_join(a, b, "key")=, like =inner_join()=, will match rows from =a= and =b= on =key=, but will also return rows from =a= that don't match any rows in =b=.  In contrast, any rows in =b= that don't match rows in =a= will be dropped.  For those rows in =a= that don't exist in =b=, the variables in =b= will be given the value =NA= (not available).
+
+#+BEGIN_SRC R
+  left_join(users2, slides_n, "User.full.name") %>% head()
+#+END_SRC
+
+#+RESULTS:
+:    First.name    Surname     SID   User.full.name points  n
+: 1     Mvegamg       Aeai 5256885     Mvegamg Aeai     15 18
+: 2       Seana Danraonaar 4519492 Seana Danraonaar     16 29
+: 3 Aiioaaecrae       Feal 9674727 Aiioaaecrae Feal     22 13
+: 4     Kanlecv     Ahaehh 7331477   Kanlecv Ahaehh     20 21
+: 5       Mmbie     Bhnona 0382761     Mmbie Bhnona     17 23
+: 6     Ceioaah       Lreq 3816494     Ceioaah Lreq     17 16
+
+That's too much to look at.  Let's modify the last command with a =select()= and rename =n=, the number of times lecture slides were accessed, to something more informative.
+
+#+BEGIN_SRC R :tangle script.R
+  slide_pts <- left_join(users2, slides_n, "User.full.name") %>% 
+     select(User.full.name, points, slide_access = n)
+#+END_SRC
+
+#+BEGIN_SRC R
+  slide_pts  # print it out
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                User.full.name points slide_access
+1                 Mvegamg Aeai     15           18
+2             Seana Danraonaar     16           29
+3             Aiioaaecrae Feal     22           13
+4               Kanlecv Ahaehh     20           21
+5                 Mmbie Bhnona     17           23
+6                 Ceioaah Lreq     17           16
+7                 Hvsa Nrmdeya     16           33
+8                 Khin Encgdii     15           40
+9             Snyyhlyen Zivnit     18           19
+10          Anml Armaopihnaeyl     13            5
+11                 Fiii Sbnnne     17           21
+12                Eadllna Aoen     21           38
+13         Slitrd Rointrngglea     19           34
+14                 Cgresi Ceia     20           18
+15               Rarhonac Kais     19           28
+16            Rlularn Jnleoemo     18           25
+17                 Dgrys Nnerl     21           20
+18                 Pyau Murgee     17           30
+19       Locntoana Jruaaaclier     21           18
+20             Ptoree Louaciae     20           33
+21           Kkrhln Jnaltntone     17           11
+22             Acish Oeraiiyvt     19           34
+23                Sihnmr Cipic     15           13
+24              Lrchu Srhianen     19           25
+25               Jmhan Oyrlibe     10           20
+26                Faur Zismset     11           25
+27              Ansalt Lntauaa     22           27
+28                  Kaur Bedaa     16           34
+29               Cayt Lholunla     16           27
+30            Srhtoaa Dadbniha     16           24
+31               Anist Fcoaeaa     22           43
+32              Zeeair Fanagay     14           31
+33            Raeaeiikl Vnrysh     21           20
+34               Plerf Lmaamua     16           11
+35        Almrgdghnb Caoinetle     19           24
+36               Ltahhaie Dano     16           17
+37                Hnchlk Jkemd     18           50
+38            Ssnteas Jnlyrihp     14           31
+39              Knute Asornhor     16           48
+40               Nloy Dnhnivnr     17           22
+41               Aoas Aiaahihl     12           26
+42                   Dl Hkslor     16           36
+43                 Ryehlno Lah     12           33
+44                  Etmzam Rie     18           14
+45           Parcihay Anepaats     16           23
+46            Ntbeae Peiasnodn     18           36
+47       Prucnn Reatsoraibneir     11           20
+48        Jiacr Rscnqronvuesaa     19           19
+49                  Mlag Iitaa     20           16
+50               Hdmrcl Lslynh     22           39
+51              Aaaryli Bibrii     14           23
+52                   Siaco Caa     17           22
+53          Dcndyin Sillilnoia     18            9
+54            Rehila Dhlreeaar     14           19
+55                 Kna Snwailn     15           11
+56               Vaocg Vlnanau     18           20
+57             Kkvnbi Larjeood     20           25
+58           Jmae Ellteneiasna     19           27
+59             Lelhaht Fniuyln     17           17
+60            Rnlnbh Knasaiuvl     18           25
+61               Mfnorlui Mneu     12            6
+62               Lrhnnm Senyua     20           32
+63                Sshln Retana     17           29
+64              Dayrrr Shunndy     20           16
+65         Nrvangi Meteiioaoae     17           15
+66              Xairuyy Lderri     21           27
+67              Luiais Hcaiaun     12           40
+68             Jnnhaa Hicuhakc     20           21
+69            Jitaivb Caailona     18           41
+70                Laiin Kdnain     20           29
+71              Lryvnan Znktah     14           21
+72               Eyehnai Kiohm     18           30
+73             Oihuraan Nriiia     18           26
+74                  Staa Ansie     13           25
+75             Auchttsnn Dcuui     18           34
+76             Ziierraa Jeaaoi     14           55
+77               Neaeap Tdaare     17           25
+78              Pdieae Vaninia     19           27
+79          Haienlral Macninhp     13           13
+80             Rooave Nntoetoc     16           23
+81                 Lrdi Aayarh     12           25
+82                Scolipm Aiaa     18           37
+83                Greye Jacljo     20           67
+84               Laanigilo Mno     18           23
+85         Bninj Amnustnaeenso     12           54
+86               Hligcli Gahei     14           17
+87                   Cidl Snor     15           26
+88               Javro Klchant     15           41
+89          Jcarhaenx Maiinniv     21           28
+90                     Ar Csvl     11           15
+91                  Jtue Amida     16           38
+92                   Taoe Yaau     14           11
+93             Ahoia Seduvaalu     10           14
+94            Heletan Bluriuar     17           37
+95              Earxlg Jlagnna     20           30
+96                 Smet Kinyae     11           15
+97             Mnaen Fpmssrnhe     19           18
+98                  Kdlm Aanap     19           28
+99              Rheit Ieielaiy     12           31
+100              Higf Mrltnllc     13           40
+101               Astaru Rirha     15           12
+102               Pjrnac Dsinr     18           12
+103           Aanefbar Remnayr     16           16
+104          Ceaiaaea Dhanulao     15           35
+105            Hooocie Sisiali     13           16
+106         Aiebrala Chmmmnuay     17           13
+107            Kngetaa Rhcaaai     19           34
+108 Mipaamt Aauamanarhetnirysn     20           40
+109        Roalanvhroa Zasneah     13           38
+110            Mirad Anaeynrcu     10           30
+111               Naeevcn Bnkg     20           21
+112              Srruh Kinarnl     20           24
+113             Ctnnna Ladaqna     13           65
+114                Hena Aaiian     21            9
+115                  Aeln Piae     20           39
+116                  Dhvn Artg     13           70
+117                     Lor Dc     19           24
+118               Raais Fcteie     21           26
+119                 Aaaaaet Su     12           12
+120                 Iiaadl Hbn     17           17
+121          Rtlrtnai Aaeaneaa     16           24
+122              Jveaut Ciirna     22           22
+123        Eanniayia Mnliahasn     19           23
+124           Vanata Ikeareyct     20           15
+125              Riap Sosniats     14           43
+126        Drnar Diohyatldnimh     18           19
+127              Medi Scnampnl     15           30
+128                  Msyie Jan     12           18
+129          Clsnevu Ndtalriil     18           39
+130           Portn Rotraarnca     22           21
+#+end_example
+
+It's reassuring that there were no students with a =NA= value for =slide_access=; all students checked the lecture slide folder at least once.  Let's examine the relationship between =slide_access= and =points= using a scatterplot.
+
+#+BEGIN_SRC R :file slide_plot.png :results output graphics
+  ggplot(slide_pts, aes(slide_access, points)) + geom_point()
+#+END_SRC
+
+Hard to see what's going on here; let's add a "loess" trendline to the plot with =geom_smooth()=.
+
+#+BEGIN_SRC R :file slide_plot2.png :results output graphics :tangle script.R
+  ggplot(slide_pts, aes(slide_access, points)) + geom_point() + geom_smooth()
+#+END_SRC
+
+Looks like lecture slide access is related to performance in the manner expected up to a point (~22 access times).
+
+** Big Blue Button data
+
+We'll repeat the process with the BBB data.  The procedure is nearly identical to what we just did with the lecture slide data.
+
+#+BEGIN_SRC R :exports none :results silent
+  bbb <- read.csv("moodle_data/bbb.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :eval never :results silent :tangle script.R
+  bbb <- read.csv("bbb.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R
+  glimpse(bbb)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Observations: 2,208
+Variables: 9
+$ X              (int) 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1...
+$ User.full.name (chr) "Mvegamg Aeai", "Mvegamg Aeai", "Mvegamg Aeai", "Mve...
+$ Time           (chr) "6/10/15, 15:59", "6/10/15, 15:59", "6/10/15, 15:59"...
+$ Affected.user  (chr) "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-...
+$ Event.context  (chr) "BigBlueButtonBN: Login to BBB online practical sess...
+$ Component      (chr) "BigBlueButtonBN", "BigBlueButtonBN", "BigBlueButton...
+$ Event.name     (chr) "BigBlueButtonBN meeting joined", "BigBlueButtonBN m...
+$ Description    (chr) "The user with id 'xx' has joined a bigbluebutton me...
+$ Origin         (chr) "web", "web", "web", "web", "web", "web", "web", "we...
+#+end_example
+
+Count access times by user.
+
+#+BEGIN_SRC R :tangle script.R
+  bbb_n <- count(bbb, User.full.name) %>%
+     rename(bbb_access = n)
+#+END_SRC
+
+Make a histogram.
+
+#+BEGIN_SRC R :results output graphics :file bbb_hist.png
+  ggplot(bbb_n, aes(bbb_access)) + geom_bar()
+#+END_SRC
+
+#+RESULTS:
+[[file:bbb_hist.png]]
+
+Now let's join this to the =users2=.  We'll use a =left_join()= in case there are students who never logged on to BBB.
+
+#+BEGIN_SRC R 
+  bbb_pts <- left_join(users2, bbb_n, "User.full.name") %>% 
+     select(User.full.name, points, bbb_access)  
+#+END_SRC
+
+#+BEGIN_SRC R
+  bbb_pts
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+                User.full.name points bbb_access
+1                 Mvegamg Aeai     15         12
+2             Seana Danraonaar     16         31
+3             Aiioaaecrae Feal     22         25
+4               Kanlecv Ahaehh     20          8
+5                 Mmbie Bhnona     17         45
+6                 Ceioaah Lreq     17         11
+7                 Hvsa Nrmdeya     16         18
+8                 Khin Encgdii     15         19
+9             Snyyhlyen Zivnit     18          7
+10          Anml Armaopihnaeyl     13          3
+11                 Fiii Sbnnne     17          3
+12                Eadllna Aoen     21          9
+13         Slitrd Rointrngglea     19         18
+14                 Cgresi Ceia     20         21
+15               Rarhonac Kais     19         24
+16            Rlularn Jnleoemo     18         12
+17                 Dgrys Nnerl     21         46
+18                 Pyau Murgee     17         23
+19       Locntoana Jruaaaclier     21         21
+20             Ptoree Louaciae     20         22
+21           Kkrhln Jnaltntone     17         15
+22             Acish Oeraiiyvt     19         37
+23                Sihnmr Cipic     15          3
+24              Lrchu Srhianen     19         18
+25               Jmhan Oyrlibe     10          3
+26                Faur Zismset     11         NA
+27              Ansalt Lntauaa     22         27
+28                  Kaur Bedaa     16         42
+29               Cayt Lholunla     16         12
+30            Srhtoaa Dadbniha     16         30
+31               Anist Fcoaeaa     22         31
+32              Zeeair Fanagay     14         58
+33            Raeaeiikl Vnrysh     21         40
+34               Plerf Lmaamua     16         37
+35        Almrgdghnb Caoinetle     19         15
+36               Ltahhaie Dano     16          4
+37                Hnchlk Jkemd     18          9
+38            Ssnteas Jnlyrihp     14         15
+39              Knute Asornhor     16         33
+40               Nloy Dnhnivnr     17          7
+41               Aoas Aiaahihl     12         NA
+42                   Dl Hkslor     16          9
+43                 Ryehlno Lah     12          9
+44                  Etmzam Rie     18         33
+45           Parcihay Anepaats     16          3
+46            Ntbeae Peiasnodn     18          9
+47       Prucnn Reatsoraibneir     11         NA
+48        Jiacr Rscnqronvuesaa     19         43
+49                  Mlag Iitaa     20         18
+50               Hdmrcl Lslynh     22          9
+51              Aaaryli Bibrii     14         21
+52                   Siaco Caa     17         22
+53          Dcndyin Sillilnoia     18         12
+54            Rehila Dhlreeaar     14          3
+55                 Kna Snwailn     15         NA
+56               Vaocg Vlnanau     18          9
+57             Kkvnbi Larjeood     20         48
+58           Jmae Ellteneiasna     19         18
+59             Lelhaht Fniuyln     17         21
+60            Rnlnbh Knasaiuvl     18         15
+61               Mfnorlui Mneu     12          3
+62               Lrhnnm Senyua     20         21
+63                Sshln Retana     17         27
+64              Dayrrr Shunndy     20          3
+65         Nrvangi Meteiioaoae     17         29
+66              Xairuyy Lderri     21         15
+67              Luiais Hcaiaun     12         36
+68             Jnnhaa Hicuhakc     20         24
+69            Jitaivb Caailona     18         51
+70                Laiin Kdnain     20         12
+71              Lryvnan Znktah     14         15
+72               Eyehnai Kiohm     18          6
+73             Oihuraan Nriiia     18          9
+74                  Staa Ansie     13          3
+75             Auchttsnn Dcuui     18         NA
+76             Ziierraa Jeaaoi     14         21
+77               Neaeap Tdaare     17          3
+78              Pdieae Vaninia     19          9
+79          Haienlral Macninhp     13         NA
+80             Rooave Nntoetoc     16          6
+81                 Lrdi Aayarh     12          6
+82                Scolipm Aiaa     18         12
+83                Greye Jacljo     20         18
+84               Laanigilo Mno     18         10
+85         Bninj Amnustnaeenso     12         19
+86               Hligcli Gahei     14          3
+87                   Cidl Snor     15         11
+88               Javro Klchant     15         27
+89          Jcarhaenx Maiinniv     21         30
+90                     Ar Csvl     11          3
+91                  Jtue Amida     16         31
+92                   Taoe Yaau     14          6
+93             Ahoia Seduvaalu     10         12
+94            Heletan Bluriuar     17         44
+95              Earxlg Jlagnna     20         18
+96                 Smet Kinyae     11         15
+97             Mnaen Fpmssrnhe     19         11
+98                  Kdlm Aanap     19         18
+99              Rheit Ieielaiy     12          8
+100              Higf Mrltnllc     13          9
+101               Astaru Rirha     15          6
+102               Pjrnac Dsinr     18          9
+103           Aanefbar Remnayr     16          3
+104          Ceaiaaea Dhanulao     15          8
+105            Hooocie Sisiali     13          6
+106         Aiebrala Chmmmnuay     17         NA
+107            Kngetaa Rhcaaai     19          4
+108 Mipaamt Aauamanarhetnirysn     20         18
+109        Roalanvhroa Zasneah     13          6
+110            Mirad Anaeynrcu     10          6
+111               Naeevcn Bnkg     20         18
+112              Srruh Kinarnl     20         56
+113             Ctnnna Ladaqna     13         39
+114                Hena Aaiian     21         NA
+115                  Aeln Piae     20         12
+116                  Dhvn Artg     13         14
+117                     Lor Dc     19         30
+118               Raais Fcteie     21          3
+119                 Aaaaaet Su     12         NA
+120                 Iiaadl Hbn     17          6
+121          Rtlrtnai Aaeaneaa     16         16
+122              Jveaut Ciirna     22          3
+123        Eanniayia Mnliahasn     19         28
+124           Vanata Ikeareyct     20         25
+125              Riap Sosniats     14         21
+126        Drnar Diohyatldnimh     18         21
+127              Medi Scnampnl     15         21
+128                  Msyie Jan     12          3
+129          Clsnevu Ndtalriil     18         59
+130           Portn Rotraarnca     22         21
+#+end_example
+
+In contrast to the data for accessing lecture notes, here we indeed see that there were some students who never used the BBB resource.  Their values for =bbb_access= are =NA=.  We should replace these =NA= values with zeros, which we can do using the =mutate()= command.  Let's add it onto the previous command using a pipe.
+
+#+BEGIN_SRC R 
+  bbb_pts <- left_join(users2, bbb_n, "User.full.name") %>% 
+     select(User.full.name, points, bbb_access) %>%
+     mutate(bbb_access = ifelse(is.na(bbb_access), 0, bbb_access))
+#+END_SRC
+
+Now plot.
+
+#+BEGIN_SRC R :results output graphics :file bbb_splot.png
+  ggplot(bbb_pts, aes(bbb_access, points)) + geom_point() + geom_smooth()
+#+END_SRC
+
+Again, we see the expected relationship up to a point (~20).  However, this way of looking at the data does not distinguish between clicking the BBB link 10 times on the same day and clicking it 10 times, once each week when the student logs into a session.  It would perhaps be better to look at BBB access times in relation to the times that sessions were actually held, to calculate some kind of 'attendance' variable for the BBB sessions.
+
+Dealing with dates can be tricky, but thankfully there is a package called =lubridate= (also by Hadley Wickham) which can make life much easier (unfortunately this package is not installed on the Boyd Orr computers).
+
+#+BEGIN_SRC R :tangle script.R
+  by_week <- bbb %>%
+      mutate(date = dmy_hm(Time), # parse the text date
+             week = week(date)) %>% # calculate week of year (1-52)
+      select(User.full.name, date, week)
+#+END_SRC
+
+We used two functions from =lubridate=, =dmy_hm= and =week=.  The first one, =dmy_hm= gives lubridate a clue about how to parse the text; namely, that the text date is in the format "Day Month Year Hour Minute" (hence dmy_hm).  The function converts the text date into a date variable that can be used for various date operations.  The next function, =week()= figures out which week of the year (1--52) the date corresponds to.  Note that we are applying =week()= on the =date= variable that we just created in =mutate()=.
+
+#+BEGIN_SRC R
+  head(by_week)
+#+END_SRC
+
+#+RESULTS:
+:   User.full.name                date week
+: 1   Mvegamg Aeai 2015-10-06 15:59:00   40
+: 2   Mvegamg Aeai 2015-10-06 15:59:00   40
+: 3   Mvegamg Aeai 2015-10-06 15:59:00   40
+: 4   Mvegamg Aeai 2015-10-06 15:39:00   40
+: 5   Mvegamg Aeai 2015-10-06 15:39:00   40
+: 6   Mvegamg Aeai 2015-10-06 15:39:00   40
+
+Since the BBB sessions were weekly, we only want to keep one session for each week; in other words, we want to ignore multiple logons within the same week.  We can do this using the =distinct()= function in =dplyr=.
+
+#+BEGIN_SRC R
+  by_week_d <- by_week %>%
+      select(User.full.name, week) %>%
+      distinct()
+#+END_SRC
+
+The function =distinct()= returns only rows having distinct values on =User.full.name= and =week=.  We can regard this as a record of student attendance, and we will only have on observation for each student on each week.  Let's visualize attendance week by week.
+
+#+BEGIN_SRC R :results output graphics :file bbb_week_hist1.png
+  ggplot(by_week_d, aes(week)) + geom_bar()
+#+END_SRC
+
+Clearly, attendance is declining over the course of the semester.  A total of 9 BBB sessions were held on weeks 39, 40, 41, 43, 45, 46, 47, 48, 49.  Clearly, students have clicked on the link outwith these weeks.  Let's get rid of those extra clicks using =filter()=
+
+#+BEGIN_SRC R :tangle script.R
+  by_week_d <- by_week %>%
+      select(User.full.name, week) %>%
+      distinct() %>%
+      filter(week %in% c(39, 40, 41, 43, 45:49))
+#+END_SRC
+
+OK, what we still haven't done is reduce the set in =by_week_d= to include only those users who are also students in the class.  We can do this using a =semi_join()=.  This will include only those observations in =by_week_d= that have a matching record in =users2=.
+
+#+BEGIN_SRC R :tangle script.R
+  by_week_d2 <- by_week_d %>%
+    semi_join(users2, "User.full.name")
+#+END_SRC
+
+This ends up dropping three observations from =by_week_d=.
+
+OK, we're about ready to compute attendance.  We can simply count up the number of observations for each student.
+
+#+BEGIN_SRC R :tangle script.R
+  bbb_attend <- count(by_week_d2, User.full.name) %>%
+     rename(att = n)
+#+END_SRC
+
+Now left join =users2= to =bbb_attend=, and convert any =NA= values to 0.
+
+#+BEGIN_SRC R :tangle script.R
+  bbb_att_pts <- left_join(users2, bbb_attend, "User.full.name") %>%
+      mutate(att = ifelse(is.na(att), 0, att))
+#+END_SRC
+
+Let's make a scatterplot.
+
+#+BEGIN_SRC R :results output graphics :file bbb_att_plot3.png
+  ggplot(bbb_att_pts, aes(att, points)) + geom_point() +
+      geom_smooth(method = "lm")
+#+END_SRC
+
+We probably have some overplotting going on, so let's jitter the points with =geom_jitter()=.
+
+#+BEGIN_SRC R :results output graphics :file bbb_att_plot4.png :tangle script.R
+  ggplot(bbb_att_pts, aes(att, points)) + geom_jitter(alpha = .5, width = 0) +
+      geom_smooth(method = "lm") + scale_x_discrete(limits = 0:9) +
+      coord_cartesian(xlim = c(-0.5, 9.5))
+#+END_SRC
+
+Now the relationship is much clearer: attendance at online practical sessions is associated with higher performance.  We can estimate a regression model using =lm()=.
+
+#+BEGIN_SRC R :tangle script.R
+  lm(points ~ att, bbb_att_pts) %>% summary()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+
+Call:
+lm(formula = points ~ att, data = bbb_att_pts)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.7858 -2.3135  0.3272  2.2989  6.3272 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  15.2281     0.4409  34.539  < 2e-16 ***
+att           0.4447     0.1024   4.344 2.82e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.929 on 128 degrees of freedom
+Multiple R-squared:  0.1285,	Adjusted R-squared:  0.1217 
+F-statistic: 18.87 on 1 and 128 DF,  p-value: 2.822e-05
+#+end_example
+
+So every additional session attended was associated with a .44 increase in the course grade.

@@ -1,0 +1,314 @@
+#+title: Functions and iteration
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:t H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle script.R
+
+* Setup 																													 :noexport:
+
+** Anonymize stars data
+
+#+BEGIN_SRC R :eval never :tangle /tmp/junk.R
+  library("tidyr")
+  library("dplyr")
+
+  anonymous_SID <- function() {
+      paste(sample(0:9, 7, TRUE), collapse = "")
+  }
+
+  dat <- read.csv("/home/daleb/dhome/undergrad_R/stars_scores.csv",
+                  colClasses = rep(c("character", "integer"), c(2, 2)),
+                  stringsAsFactors = FALSE)
+
+  soft <- read.csv("/home/daleb/dhome/undergrad_R/software.csv",
+                   colClasses = rep("character", 3),
+                   stringsAsFactors = FALSE) %>%
+                       select(-id)
+
+  marks <- read.csv("/home/daleb/dhome/undergrad_R/final_grades.csv",
+                    stringsAsFactors = FALSE,
+                    colClasses = rep(c("character", "integer"), c(4, 3)))
+
+  all_IDs <- union(dat %>% select(SID) %>% distinct(),
+                   soft %>% select(SID) %>% distinct(),
+                   marks %>% select(SID) %>% distinct()) %>%
+      arrange(SID)
+
+  anon_key <- data_frame(ASID = replicate(nrow(all_IDs), anonymous_SID()),
+             SID = all_IDs[["SID"]])
+
+  stopifnot(length(unique(anon_key[["ASID"]])) ==
+                length(unique(anon_key[["SID"]])))
+
+  saveRDS(anon_key, "/home/daleb/dhome/undergrad_R/anon_key.rds")
+
+  dat %>% inner_join(anon_key, "SID") %>%
+      as_data_frame() %>%
+      mutate(item_id = as.integer(substr(item_id, 2, nchar(item_id))),
+             wave = paste0("w", Wave)) %>%
+      select(ASID, item_id, resp, wave) %>%
+      saveRDS("stars_anon/survey.rds")
+
+  soft %>% inner_join(anon_key, "SID") %>%
+      as_data_frame() %>%
+      select(ASID, software = Software) %>%
+      saveRDS("stars_anon/software.rds")
+
+  marks %>% inner_join(anon_key, "SID") %>%
+      as_data_frame() %>%
+      select(ASID, Homework_Pts, Exam_Pts) %>%
+      gather(component, mark, -ASID) %>%
+      arrange(ASID, component) %>%
+      saveRDS("stars_anon/marks.rds")
+#+END_SRC
+
+
+** Break stars data into separate files
+
+#+BEGIN_SRC R :eval never :tangle /tmp/junk.R
+  library("dplyr")
+  library("purrr")
+
+  survey <- readRDS("stars_anon/survey.rds")
+
+  save_it <- function(x) {
+      x_dat <- select(x, -ASID)
+      write.csv(x_dat, paste0("data/", x$ASID[1], ".csv"), row.names = FALSE)
+  }
+
+  survey %>%
+      split(.$ASID) %>%
+      walk(save_it)    
+#+END_SRC
+
+
+* Setting up the environment
+
+In this session, we will be looking at how to write your own custom
+functions to perform tasks, and how to iterate those tasks repeatedly
+using various iteration functionality in R.
+
+We will be working with the STARS survey data, which measures
+statistics anxiety, and relating the survey data to class performance
+and which software students chose (R or SPSS).
+
+Download the data [[file:fdata.zip][here]] and unzip the archive into your working
+directory (it will expand into two subdirectories: =/data= and
+=/stars_anon=).
+
+If you want the full R script for this session, click [[file:script.R][here]].
+
+First, let's load the packages we will need.  You will probably
+need to install the additional packages =purrr= and =broom= using:
+
+#+BEGIN_SRC R :exports code :eval never :tangle /tmp/junk.R
+  install.packages(c("purrr", "broom"))
+#+END_SRC
+
+#+BEGIN_SRC R 
+  library("dplyr")
+  library("tidyr")
+  ## NB: dev version of dplyr (0.4.3.9001) breaks tidyr::nest()
+  ##     if you get the error "No variables selected" when using tidyr::nest(),
+  ##     downgrade back to CRAN version of dplyr (0.4.3) using:
+  ##     install.packages("dplyr")
+  library("purrr")
+  library("broom")
+
+  survey <- readRDS("stars_anon/survey.rds")
+  scales <- readRDS("stars_anon/subscales.rds")
+  software <- readRDS("stars_anon/software.rds")
+  marks <- readRDS("stars_anon/marks.rds")
+#+END_SRC
+
+
+* Reading in a bunch of files
+
+For this first part, we're going to read a bunch of CSV files stored
+in the =data/= subdirectory.  There is one data file for each student.
+We need to bring all of the data into one data frame so that we can
+perform some analysis.
+
+#+BEGIN_SRC R
+  ## read in all the files stored in data/
+  read_survey_data <- function(x) {
+      fname <- paste("data", x, sep = "/")
+      asid <- sub("\\.csv$", "", x) 
+      read.csv(fname, stringsAsFactors = FALSE) %>%
+          mutate(ASID = asid)
+  }
+
+  my_files <- list.files("data")
+
+  ## first method: a for loop
+  ##   followed by dplyr::bind_rows()
+  dat <- list()
+  for (i in seq_along(my_files)) {
+      dat[[i]] <- read_survey_data(my_files[i])
+  }
+  survey <- bind_rows(dat)
+
+  ## second method: base::lapply()
+  ##   followed by dplyr::bind_rows()
+  dat <- lapply(my_files, read_survey_data)
+  survey <- bind_rows(dat)
+
+  ## third method: purrr::map()
+  ##   followed by dplyr::bind_rows()
+  dat <- purrr::map(my_files, read_survey_data)
+  survey <- dplyr::bind_rows(dat)
+
+  ## fourth method: plyr::ldply()
+  survey <- plyr::ldply(my_files, read_survey_data)
+#+END_SRC
+
+* Performing a permutation test
+
+Here the goal is to investigate whether the final grades were
+significantly different for R versus SPSS users.
+
+#+BEGIN_SRC R
+  ## change from long to wide and calculate final score
+  ## 60% exam, 40% homework
+  fmarks <- marks %>%
+      spread(component, mark) %>%
+      mutate(Final = .6 * Exam_Pts + .4 * Homework_Pts) %>%
+      select(ASID, Final)
+
+  fsoft <- fmarks %>%
+      inner_join(software, "ASID")
+
+  parm_t <- t.test(Final ~ software, data = fsoft)
+
+  hist(fsoft$Final)
+
+  ## 1. randomly re-assign values of 'software' to each row
+  ## 2. calculate means for each software group
+  ## 3. store the result
+
+  ## build a function
+  ## x <- fsoft
+  mean_diff <- function(x, permute = TRUE) {
+      if (permute) {
+          x$software <- sample(x$software)
+      }
+
+      x_means <- x %>%
+          group_by(software) %>% summarise(m_Final = mean(Final))
+
+      x_means$m_Final[1] - x_means$m_Final[2]
+  }
+
+  orig <- mean_diff(fsoft, FALSE)
+
+  px <- c(orig, replicate(9999, mean_diff(fsoft)))
+
+  n_ge <- sum(abs(px) >= abs(px[1]))
+  pval <- n_ge / length(px)
+
+  tidy(parm_t)
+  cat("permutation p-value: ", round(pval, 4), "\n")
+#+END_SRC
+
+* Bootstrapping your data																					 :noexport:
+
+#+BEGIN_SRC R :tangle /tmp/junk.R
+  survey_nest <- survey %>% nest(-ASID)
+
+  map(survey_nest$data, nrow)
+  map_int(survey_nest$data, nrow)
+
+  sdat <- survey_nest %>%
+      mutate(ni = map_int(data, nrow),
+             nm = map_dbl(data, function(x) mean(x$resp)))
+
+  map_dbl(survey_nest$data, function(x) mean(x$resp)) %>%
+      mean()
+
+  boot <- replicate(1000, sample_n(survey_nest, nrow(survey_nest), TRUE),
+                    simplify = FALSE)
+#+END_SRC
+
+
+* Testing for differences between groups
+
+Now we'll test whether R and SPSS users differ in anxiety
+across the subscales.  There are 6 subscales, so we'll need to do 6
+different independent-samples t.tests.  Our analysis will use
+=purrr::map()=, =tidyr::nest()=, and =broom::tidy()= to perform
+t-tests for each individual subscale of the STARS survey.
+
+#+BEGIN_SRC R
+  ind_ttest <- function(x) {
+      t.test(m_score ~ software, data = x)
+  }
+
+  allsub <- survey %>%
+      inner_join(scales, "item_id") %>%
+      group_by(ASID, subscale) %>%
+      summarise(m_score = mean(resp)) %>%
+      ungroup()
+
+  allsoft <- allsub %>%
+      inner_join(software, "ASID")
+
+  res <- allsoft %>%
+      nest(-subscale) %>%
+      mutate(ttest = map(data, ind_ttest),
+             stats = map(ttest, tidy))
+
+  res %>%
+      unnest(stats) %>%
+      select(-data, -ttest)
+#+END_SRC
+
+* Testing for change on STARS subscales
+
+In this part we will use =purrr::map()=, =tidyr::nest()=, and
+=broom::tidy()= to see if there is any change in anxiety from the
+first to the second wave.
+
+#+BEGIN_SRC R
+  paired_ttest <- function(x) {
+      t.test(x$w1, x$w2, paired = TRUE)
+  }
+
+  subscores <- survey %>%
+      inner_join(scales, "item_id") %>%
+      group_by(ASID, wave, subscale) %>%
+      summarise(m_score = mean(resp)) %>%
+      ungroup()
+
+  ## only those students for whom we have data for both waves
+  both <- subscores %>%
+      select(ASID, wave) %>%
+      distinct() %>%
+      count(ASID) %>%
+      filter(n == 2)
+
+  subboth <- subscores %>%
+      semi_join(both, "ASID") %>%
+      spread(wave, m_score) %>%
+      nest(-subscale, .key = scores)
+
+  ## TODO: show some examples of purrr::map()
+  subboth %>%
+      mutate(model = purrr::map(scores, paired_ttest),
+             stats = purrr::map(model, broom::tidy)) %>%
+      select(subscale, stats) %>%
+      unnest(stats)
+#+END_SRC

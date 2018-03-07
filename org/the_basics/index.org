@@ -1,0 +1,859 @@
+#+title: Getting started with R
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training Nov 30 2015
+#+OPTIONS: toc:t H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R* :exports both :results output :tangle script.R
+
+* Why learn R?
+
+- A picture says 1000 words (http://r4stats.com/articles/popularity/)
+
+#+BEGIN_CENTER
+file:one_graph.png
+#+END_CENTER
+
+* Introduction
+
+- Download the [[file:script.R][R script]] for the introduction
+
+** What is =R=?
+
+#+BEGIN_CENTER
+#+ATTR_LATEX: :width .2\textwidth
+file:new_R_logo.png
+
+/A programming environment for data processing and statistical analysis/
+#+END_CENTER
+
+- free and open-source
+- community supported
+- continually evolving
+- promotes /reproducible research/
+
+** Interacting with =R=
+
+*** base R (console)
+
+- [[http://www.r-project.org]]
+- =REPL= (Read-Evaluate-Print-Loop)
+
+#+BEGIN_CENTER
+[[file:repl.png]]
+#+END_CENTER
+
+*** RStudio: An Integrated Development Environment (IDE) for R
+
+-  [[http://www.rstudio.com][www.rstudio.com]]
+
+#+BEGIN_CENTER
+[[file:rstudio.png]]
+#+END_CENTER
+
+
+** Warming up: Use R as a calculator
+
+- be prepared to make lots of typos (at first) :/
+
+#+BEGIN_SRC R
+  ## REPL: Read/Evaluate/Print Loop
+  ## R prints results back at you
+  1 + 1
+#+END_SRC
+
+#+RESULTS:
+: [1] 2
+
+- R remembers the individual lines you typed in the past (your history).  Use arrow keys to scroll through your history
+
+#+BEGIN_SRC R
+  1 + 1 + 3
+#+END_SRC
+
+#+RESULTS:
+: [1] 5
+
+- You can break up math expressions over multiple lines; R waits for a complete expression before processing it.
+
+#+BEGIN_SRC R
+  ## here comes a long expression
+  ## let's break it over multiple lines
+  1 + 2 + 3 + 4 + 5 + 6 +
+      7 + 8 + 9 +
+      10
+#+END_SRC
+
+#+RESULTS:
+: [1] 55
+
+#+BEGIN_SRC R
+  "Good afternoon"
+#+END_SRC
+
+#+RESULTS:
+: [1] "Good afternoon"
+
+- You can break up text over multiple lines; R waits for a close quote before processing it
+
+#+BEGIN_SRC R
+"There is nothing in the world 
+that makes people so unhappy as fear.  
+The misfortune that befalls us is 
+seldom, or never, as bad as that 
+which we fear.
+
+- Friedrich Schiller"
+#+END_SRC
+
+#+RESULTS:
+: [1] "There is nothing in the world \nthat makes people so unhappy as fear.  \nThe misfortune that befalls us is \nseldom or never as bad as that \nwhich we fear.\n\n- Friedrich Schiller"
+
+#+BEGIN_SRC R
+  ## comments: any text from '#' on is ignored until end of line
+  22 / 7  # approximation to pi
+#+END_SRC
+
+** Storing results in a variable
+
+- capitalization matters
+- don't use spaces or special characters =(^&"'*+?)= etc.
+- use the assignment operator =<-=
+
+#+BEGIN_SRC R
+  ## use the assignment operator '<-'
+  ## R stores the number in the variable
+  x <- 5
+#+END_SRC
+
+#+BEGIN_SRC R
+  x * 2
+#+END_SRC
+
+#+BEGIN_SRC R
+  ## R evaluates the expression and stores the result in the variable
+  boring_calculation <- 2 + 2  
+#+END_SRC
+
+#+RESULTS:
+
+- Note that it doesn't print the result back at you when it's stored.  To view the result, just type the variable name on a blank line.
+
+#+BEGIN_SRC R
+  boring_calculation
+#+END_SRC
+
+#+RESULTS:
+: [1] 5
+: [1] 4
+
+** The workspace
+
+- Anytime you assign something to a new variable, R creates a new object in your workspace.  Objects in your workspace exist until you end your session; then they disappear forever (unless you save them).
+
+#+BEGIN_SRC R :exports code 
+  ls()
+#+END_SRC
+
+#+BEGIN_SRC R
+  rm("x")
+#+END_SRC
+
+#+BEGIN_SRC R
+  rm(list = ls()) # clear out the workspace
+#+END_SRC
+
+** Vectors and vectorized calculations
+
+- vector: array of ordered elements
+- all of the same /data type/ (numeric, character, factor)
+
+#+BEGIN_SRC R
+  ## put information into a vector using c(...)
+  c(1, 2, 3)
+#+END_SRC
+
+#+BEGIN_SRC R
+  c("this", "is", "cool")
+#+END_SRC
+
+#+BEGIN_SRC R
+  ## what happens when you mix types?
+  c(2, "good", 2, "b", "true")
+#+END_SRC
+
+#+RESULTS:
+: [1] "2"    "good" "2"    "b"    "true"
+
+*** Calculating \(z\)-scores
+
+#+BEGIN_SRC R
+  ## example IQ scores: mu = 100, sigma = 15
+  iq <- c(86, 101, 127, 99)
+
+  iq - 100
+#+END_SRC
+
+#+BEGIN_CENTER
+\(z = \frac{X - \mu}{\sigma}\)
+#+END_CENTER
+
+#+BEGIN_SRC R
+  ## z-scores
+  (iq - 100) / 15
+#+END_SRC
+
+#+RESULTS:
+: [1] -0.93333333  0.06666667  1.80000000 -0.06666667
+
+** Calling functions
+
+#+BEGIN_SRC R
+  iq_z <- (iq - 100) / 15
+
+  sort(iq_z)
+#+END_SRC
+
+#+RESULTS:
+: [1] -0.93333333 -0.06666667  0.06666667  1.80000000
+
+#+BEGIN_SRC R
+  round(iq_z, 2)
+#+END_SRC
+
+#+RESULTS:
+: [1] -0.93  0.07  1.80 -0.07
+
+#+BEGIN_SRC R
+  round(sort(iq_z), 2)
+#+END_SRC
+
+#+RESULTS:
+: [1] -0.93 -0.07  0.07  1.80
+
+** Add-on packages
+
+*** Installing
+
+- The [[https://cran.r-project.org/][Comprehensive R Archive Network (CRAN)]] hosts the official repository of R add-on packages
+	- these are installed using the function =install.packages("package_name")= in base R
+- There are many unofficial packages hosted at github, which can be installed using =install_github()= from the add-on package =devtools=.
+
+#+BEGIN_SRC R :exports code eval never
+  install.packages("fortunes")
+  devtools::install_github("sckott/cowsay")
+#+END_SRC
+
+*** Accessing the functionality of add-on packages
+
+#+BEGIN_SRC R
+  library("dplyr") # access functionality, including pipes
+#+END_SRC
+
+
+** Pipes
+
+Calls to functions can be serialized (put in sequence) using the =%>%= operator.  This is a syntactic innovation introduced to R by Stephan Milton Bache in 2014.  The =%>%= lives in the package =magrittr=, and also is exported through the add-on package =dplyr= by Hadley Wickham.
+
+#+BEGIN_SRC R  
+  ## replaces:
+  ##   round(sort(iq_z), 2)
+  iq_z %>% sort() %>% round(2)
+#+END_SRC
+
+#+RESULTS:
+: [1] -0.93 -0.07  0.07  1.80
+
+** Getting help
+
+- How "extreme" are these IQ scores?  We want to use the =pnorm()= function from base R.
+
+#+BEGIN_SRC R :exports code :eval never
+  ## help(topic, package)
+  help("pnorm") ## help page
+  ?pnorm 
+
+  example("pnorm") ## show examples (careful!)
+#+END_SRC
+
+#+BEGIN_EXAMPLE
+Normal                  package:stats                  R Documentation
+
+The Normal Distribution
+
+Description:
+
+     Density, distribution function, quantile function and random
+     generation for the normal distribution with mean equal to ‘mean’
+     and standard deviation equal to ‘sd’.
+
+Usage:
+
+     dnorm(x, mean = 0, sd = 1, log = FALSE)
+     pnorm(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+     qnorm(p, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+     rnorm(n, mean = 0, sd = 1)
+     
+Arguments:
+
+    x, q: vector of quantiles.
+
+       p: vector of probabilities.
+
+       n: number of observations. If ‘length(n) > 1’, the length is
+          taken to be the number required.
+
+    mean: vector of means.
+
+      sd: vector of standard deviations.
+
+log, log.p: logical; if TRUE, probabilities p are given as log(p).
+
+lower.tail: logical; if TRUE (default), probabilities are P[X <= x]
+          otherwise, P[X > x].
+
+Details:
+
+     If ‘mean’ or ‘sd’ are not specified they assume the default values
+     of ‘0’ and ‘1’, respectively.
+
+     The normal distribution has density
+
+            f(x) = 1/(sqrt(2 pi) sigma) e^-((x - mu)^2/(2 sigma^2))     
+     
+     where mu is the mean of the distribution and sigma the standard
+     deviation.
+
+Value:
+
+     ‘dnorm’ gives the density, ‘pnorm’ gives the distribution
+     function, ‘qnorm’ gives the quantile function, and ‘rnorm’
+     generates random deviates.
+
+     The length of the result is determined by ‘n’ for ‘rnorm’, and is
+     the maximum of the lengths of the numerical arguments for the
+     other functions.
+
+     The numerical arguments other than ‘n’ are recycled to the length
+     of the result.  Only the first elements of the logical arguments
+     are used.
+
+     For ‘sd = 0’ this gives the limit as ‘sd’ decreases to 0, a point
+     mass at ‘mu’.  ‘sd < 0’ is an error and returns ‘NaN’.
+#+END_EXAMPLE
+
+#+BEGIN_SRC R
+  ## what percentile (against the standard normal dist)
+  pnorm(iq_z)
+
+  ## what percentile, calculated from raw scores
+  pnorm(iq, mean = 100, sd = 15)
+#+END_SRC
+
+#+RESULTS:
+: [1] 0.1753239 0.5265765 0.9640697 0.4734235
+
+** Data types
+
+- other data types include:
+
+| =matrix= | two dimensions         | all data must be of same type |
+| =array=  | two or more dimensions | all data must be of same type |
+
+- also
+
+| =list=       | like a vector, but elements can be different types |
+| =data.frame= | tabular data, most common for statistical analysis |
+
+*** Data frames
+
+- The =data.frame= data type allows us to represent tabular data, like the type of data you find in a spreadsheet.
+
+#+NAME: iq_tbl
+#+BEGIN_SRC R :exports results :results value :colnames yes :tangle junk.R
+  dat <- data.frame(subject = c("DB", "FF", "LQ", "MJ"),
+             IQ = iq,
+             z_score = round(iq_z, 2),
+             percentile = round(pnorm(iq_z) * 100))
+#+END_SRC
+
+#+RESULTS: iq_tbl
+| subject |  IQ | z_score | percentile |
+|---------+-----+---------+------------|
+| DB      |  86 |   -0.93 |         18 |
+| FF      | 101 |    0.07 |         53 |
+| LQ      | 127 |     1.8 |         96 |
+| MJ      |  99 |   -0.07 |         47 |
+
+- to create the above table:
+
+#+BEGIN_SRC R :noweb yes :results output
+  dat <- data.frame(subject = c("DB", "FF", "LQ", "MJ"),
+             IQ = iq,
+             z_score = iq_z,
+             percentile = pnorm(iq_z) * 100)
+
+  dat
+#+END_SRC
+
+#+RESULTS:
+:   subject  IQ     z_score percentile
+: 1      DB  86 -0.93333333   17.53239
+: 2      FF 101  0.06666667   52.65765
+: 3      LQ 127  1.80000000   96.40697
+: 4      MJ  99 -0.06666667   47.34235
+
+*** Referencing values in a data.frame
+
+- referencing a column
+
+#+BEGIN_SRC R
+  ## all of these methods are equivalent
+  dat$IQ
+  dat[["IQ"]]
+  dat[[2]]
+
+  dat[, "IQ"]
+  dat[, 2]
+#+END_SRC
+
+
+* Developing an analysis in R
+	:PROPERTIES:
+	:header-args:R: :session *R* :tangle stars/stars_analysis.R :exports both :results output :noweb yes
+	:END:
+
+For this second part of the training, we are going to analyse data from the STARS Statistics Anxiety Survey, which was administered to students every year over a three-year span (thanks to Maxine Swingler for the data from years 1 and 2).  All the responses have been anonymised; in other words, by associating the responses for each student with an arbitrary ID number.
+
+The STARS survey (Cruise, Cash, & Bolton, 1985) is a 51-item questionnaire, with each response on a 1 to 5 scale, with higher numbers indicating greater anxiety.
+
+[[file:stars_survey.png]]
+
+STARS has five subscales:
+
+#+BEGIN_SRC R :exports results :results value :colnames yes :tangle junk.R
+  translate_subscales <- function(x) {
+      data_frame(subscale = x[["subscale"]][1],
+                 items = paste(as.integer(sub("^I", "", x[["item_id"]])),
+                     collapse = ", "))
+  }
+
+  read.csv("stars/subscales.csv") %>%
+      group_by(subscale) %>%
+      do(translate_subscales(.))
+#+END_SRC
+
+#+RESULTS:
+| subscale       | items                                                          |
+|----------------+----------------------------------------------------------------|
+| Ask_For_Help   | 3, 16, 19, 23                                                  |
+| Interpretation | 2, 5, 6, 7, 9, 11, 12, 14, 17, 18, 20                          |
+| Self-Concept   | 25, 31, 34, 38, 39, 48, 51                                     |
+| Teacher        | 30, 32, 43, 44, 46                                             |
+| Test           | 1, 4, 8, 10, 13, 15, 21, 22                                    |
+| Worth          | 24, 26, 27, 28, 29, 33, 35, 36, 37, 40, 41, 42, 45, 47, 49, 50 |
+
+We have the data for the three years in /wide format/.  In other words, it looks like this:
+
+[[file:wide.png]]
+
+Our tasks are:
+
+1. reshape the data so that we can match responses to subscales;
+2. match responses to subscales;
+3. calculate means for each subscale for each respondent;
+4. visualize the results using the add-on package =ggplot2=;
+5. plug the code into an RMarkdown document to create a dynamic report.
+
+** Download the data and scripts (.zip file)
+
+[[file:stars.zip][GU STARS (Statistics Anxiety Survey) data]]
+
+** Maximize reproducibility
+
+- don't save your workspace image on exit and don't load it on startup
+
+#+BEGIN_CENTER
+[[file:repro.png]]
+#+END_CENTER
+
+** The all-important "working directory"
+
+- You can set your working directory from within the console using
+  =setwd()=, or you can do access a file picker from the drop-down
+  menu: =Session | Set Working Directory | Choose Directory...=.  (The
+  file picker will generate the appropriate =setwd()= command in your
+  console.)
+- *NEVER* use =setwd()= within a script.  Your directory structure is
+  unique, and may be different when you access these files in the
+  future (say, on a different computer).  Don't. Do. It.
+- The script you are writing should "live" inside the working
+  directory, so that it subdirectories can be accessed in your script
+  using relative instead of absolute path.
+
+** Structure of an R script
+
+#+BEGIN_SRC R :exports code :eval never :tangle junk.R
+  ## comment here should say something about this script
+  ## - who made it, what's it for
+  ## - any particular version requirements?
+
+  ## add-on packages
+  library("dplyr") # data processing
+  library("tidyr") # tidying
+  library("ggplot2") # plotting
+  library("lme4") # mixed-effects analysis
+
+  ## any functions that I have defined
+  my_func <- function(a, b, c) (a + b) / c
+  cats_are_cool <- function() cat("cats are cool\n")
+
+  ## read in data you will be using
+  dat <- read.csv("my_data.csv")
+
+  ## the code
+  my_func(1, 3, 2)
+  ## .. etc.  
+#+END_SRC
+
+** File Input/Output
+
+#+BEGIN_SRC R
+  library("dplyr")   # data processing
+  library("tidyr")   # data reshaping
+  library("ggplot2") # plotting
+
+  scales <- read.csv("subscales.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(scales)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 51
+: Variables: 2
+: $ subscale (chr) "Ask_For_Help", "Ask_For_Help", "Ask_For_Help", "Ask_For_H...
+: $ item_id  (chr) "I03", "I16", "I19", "I23", "I02", "I05", "I06", "I07", "I...
+
+#+BEGIN_SRC R 
+  stars_wide <- read.csv("stars.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(stars_wide)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Observations: 253
+Variables: 53
+$ student_id (int) 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15...
+$ year       (int) 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 1, 2, 2, 1, 1,...
+$ I01        (int) 4, 5, 2, 5, 3, 4, 1, 2, 3, 3, 3, 4, 4, 2, 2, 2, 3, 4, 3,...
+$ I02        (int) 2, 3, 4, 2, 3, 4, 3, 4, 2, 2, 3, 3, 2, 4, 2, 1, 3, 3, 1,...
+$ I03        (int) 4, 2, 1, 2, 2, 5, 5, 4, 4, 2, 2, 3, 4, 3, 3, 1, 3, 2, 1,...
+$ I04        (int) 4, 3, 2, 4, 3, 3, 1, 2, 4, 2, 4, 3, 3, 2, 3, 1, 4, 3, 3,...
+$ I05        (int) 2, 5, 3, 1, 3, 2, 3, 3, 1, 5, 1, 2, 2, 3, 2, 2, 3, 3, 1,...
+$ I06        (int) 3, 5, 3, 2, 3, 4, 2, 1, 3, 3, 4, 2, 2, 2, 2, 1, 2, 3, 1,...
+$ I07        (int) 4, 5, 4, 4, 2, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 4, 4, 2,...
+$ I08        (int) 4, 5, 2, 5, 4, 3, 4, 4, 5, 5, 4, 4, 5, 2, 3, 4, 4, 5, 2,...
+$ I09        (int) 1, 3, 4, 3, 1, 3, 1, 3, 1, 1, 3, 2, 3, 2, 2, 2, 2, 1, 1,...
+$ I10        (int) 3, 5, 2, 5, 4, NA, 5, 5, 3, 3, 2, 4, 3, 2, 4, 4, 3, 5, 1...
+$ I11        (int) 1, 2, 2, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 1, 2, 2, 2, 3, 2,...
+$ I12        (int) 1, 4, 2, 2, 1, 1, 1, 3, 2, 2, 4, 3, 1, 1, 3, 2, 1, 2, 1,...
+$ I13        (int) 4, 5, 4, 5, 4, 3, 2, 3, 2, 4, 5, 5, 4, 4, 2, 3, 4, 3, 2,...
+$ I14        (int) 2, 3, 2, 1, 2, 2, 1, 2, 1, 3, 3, 3, 2, 2, 1, 2, 3, 2, 1,...
+$ I15        (int) 3, 5, 2, 5, 4, 5, 5, 5, 4, 3, 2, 4, 5, 2, 3, 4, 3, 5, 2,...
+$ I16        (int) 4, 1, 1, 3, 1, 4, 5, 4, 2, 1, 2, 3, 1, 4, 3, 1, 2, 3, 1,...
+$ I17        (int) 1, 1, 3, 1, 2, 4, 1, 3, 1, 3, 4, 3, 2, 2, 2, 3, 2, 2, 1,...
+$ I18        (int) 4, 4, 3, 1, 1, 4, 5, 2, 1, 1, 3, 5, 3, 3, 3, 1, 2, 3, 1,...
+$ I19        (int) 4, 1, 3, 2, 1, 5, 5, 1, 1, 2, 2, 5, 2, 3, 3, 1, 4, 2, 1,...
+$ I20        (int) 3, 4, 4, 2, 3, 4, 2, 2, 2, 4, 3, 3, 3, 2, 2, 1, 3, 4, 2,...
+$ I21        (int) 4, 4, 2, 2, 1, 2, 1, 3, 2, 1, 1, 3, 3, 1, 2, 2, 2, 2, 2,...
+$ I22        (int) 4, 4, 4, 5, 4, 2, 5, 2, 4, 2, 2, 4, 4, 2, 3, 3, 3, 3, 2,...
+$ I23        (int) 3, 4, 1, 3, 1, 2, 1, 2, 3, 2, 1, 3, 2, 2, 2, 1, 2, 2, 1,...
+$ I24        (int) 2, 5, 2, 3, 2, 2, 1, 2, 1, 5, 1, 2, 3, 3, 2, 1, 2, 1, 3,...
+$ I25        (int) 4, 4, 2, 5, 2, 2, 3, 1, 3, 4, 1, 3, 2, 1, 1, 1, 3, 2, 2,...
+$ I26        (int) 2, 1, 1, 1, 3, 4, 1, 3, 2, 1, 1, 3, 2, 2, 2, 1, 2, 1, 3,...
+$ I27        (int) 1, 1, 1, 1, 3, 3, 1, 3, 3, 1, 1, 2, 2, 1, 2, 1, 2, 1, 1,...
+$ I28        (int) 2, 2, 1, 2, 4, 2, 1, 4, 4, 2, 1, 2, 1, 1, 2, 1, 2, 1, 3,...
+$ I29        (int) 2, 1, 1, 1, 3, 2, 1, 2, 2, 1, 1, NA, 1, 1, 2, 1, 1, 1, 1...
+$ I30        (int) 2, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 2, 3, 2, 1, 1, 2, 1, 1,...
+$ I31        (int) 3, 3, 1, 3, 2, 2, 1, 1, 1, 3, 1, 3, 1, 1, 1, 1, 2, 1, 1,...
+$ I32        (int) 5, 1, 1, 1, 3, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1,...
+$ I33        (int) 1, 2, 1, 1, 3, 3, 1, 1, 3, 1, 1, 1, 2, 1, 2, 1, 2, 1, 2,...
+$ I34        (int) 4, 4, 1, 3, 3, 5, 1, 2, 4, 1, 2, 2, 3, 1, 1, 1, 2, 1, 1,...
+$ I35        (int) 2, 1, 1, 1, 3, 2, 1, 1, 3, 3, 2, 2, 2, 1, 2, 1, 2, 1, 1,...
+$ I36        (int) 4, 4, 2, 1, 2, 4, 1, 3, 4, 4, 3, 1, 4, 3, 3, 1, 2, 1, 1,...
+$ I37        (int) 2, 5, 1, 2, 4, 4, 1, 2, 4, 2, 2, 2, 4, 1, 2, 1, 2, 2, 2,...
+$ I38        (int) 3, 3, 1, 1, 2, 2, 1, 1, 4, 1, 2, 2, 2, 1, 2, 1, 2, 1, 1,...
+$ I39        (int) 4, 2, 1, 4, 2, 3, 1, 1, 2, 3, 1, 2, 3, 1, 3, 3, 3, 1, 1,...
+$ I40        (int) 2, 1, 1, 3, 3, 4, 1, 2, 2, 4, 1, 2, 3, 1, 2, 1, 2, 1, 2,...
+$ I41        (int) 1, 1, 1, 1, 2, 2, 1, 2, 1, NA, 1, 2, 1, 1, 1, 1, 1, 1, 1...
+$ I42        (int) 1, 1, 1, 1, 2, 4, 1, 2, 1, 2, 2, 2, 1, 1, 2, 1, 2, 2, 1,...
+$ I43        (int) 3, 4, 2, 1, 2, 1, 1, 1, 4, 5, 2, 3, 4, 3, 1, 1, 1, 2, 1,...
+$ I44        (int) 3, 3, 1, 1, 3, 1, 1, 1, 3, 3, 1, 2, 3, 4, 2, 1, 2, 1, 1,...
+$ I45        (int) 1, 2, 1, 1, 3, 2, 1, 1, 3, 5, 3, 2, 5, 1, 2, 1, 1, 1, 1,...
+$ I46        (int) 4, 1, 4, 1, 3, 2, 1, 2, 2, 3, 3, 2, 4, 4, 2, 1, 3, 1, 1,...
+$ I47        (int) 2, 1, 1, 1, 2, 2, 1, 1, NA, 1, 1, 2, 3, 3, 2, 1, 2, 1, 1...
+$ I48        (int) 4, 3, 1, 1, 2, 2, 1, 3, 1, 5, 1, 4, 3, 1, 2, 2, 2, 1, 3,...
+$ I49        (int) 1, 2, 1, 1, 3, 2, 1, 1, 2, 2, 1, 1, 2, 1, 2, 1, 3, 1, 1,...
+$ I50        (int) 1, 1, 1, 1, 3, 3, 1, 2, 1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1,...
+$ I51        (int) 4, 2, 2, 1, 2, 3, 1, 1, 2, 4, 2, 2, 3, 1, 2, 1, 4, 2, 1,...
+#+end_example
+
+** Reshape wide to long
+
+#+BEGIN_SRC R 
+  stars <- stars_wide %>% gather(item_id, score, I01:I51)
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(stars)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 12,903
+: Variables: 4
+: $ student_id (int) 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15...
+: $ year       (int) 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 1, 2, 2, 1, 1,...
+: $ item_id    (fctr) I01, I01, I01, I01, I01, I01, I01, I01, I01, I01, I01, ...
+: $ score      (int) 4, 5, 2, 5, 3, 4, 1, 2, 3, 3, 3, 4, 4, 2, 2, 2, 3, 4, 3,...
+
+** Map to subscales
+
+#+BEGIN_SRC R :tangle junk.R
+  ## map each item to each of the 5 subscales
+  ## I3  --> Ask_For_Help
+  ## I2  --> Interpretation
+  ## I25 --> Self-Concept
+  ## I30 --> Teacher
+  ## I1  --> Test
+  ## I24 --> Worth
+#+END_SRC
+
+#+BEGIN_SRC R 
+  stars_sub <- inner_join(scales, stars, "item_id")
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(stars_sub)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Warning message:
+In inner_join_impl(x, y, by$x, by$y) :
+  joining character vector and factor, coercing into character vector
+Observations: 12,903
+Variables: 5
+$ subscale   (chr) "Ask_For_Help", "Ask_For_Help", "Ask_For_Help", "Ask_For...
+$ item_id    (chr) "I03", "I03", "I03", "I03", "I03", "I03", "I03", "I03", ...
+$ student_id (int) 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 12, 13, 14, 15...
+$ year       (int) 1, 1, 3, 1, 1, 3, 1, 1, 1, 1, 3, 3, 1, 3, 1, 2, 2, 1, 1,...
+$ score      (int) 4, 2, 1, 2, 2, 5, 5, 4, 4, 2, 2, 3, 4, 3, 3, 1, 3, 2, 1,...
+#+end_example
+
+** Data summaries
+
+#+BEGIN_SRC R
+  ## calculate subscale means per student_id and year
+  stars_means <- stars_sub %>%
+     group_by(student_id, year, subscale) %>%
+     summarise(mscore = mean(score))
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(stars_means)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 1,518
+: Variables: 4
+: $ student_id (int) 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3,...
+: $ year       (int) 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 1,...
+: $ subscale   (chr) "Ask_For_Help", "Interpretation", "Self-Concept", "Teach...
+: $ mscore     (dbl) 3.750000, 2.181818, 3.714286, 3.400000, 3.750000, 1.6875...
+
+#+BEGIN_SRC R :results output graphics :file plot_1.png :tangle junk.R
+  ggplot(stars_means, aes(subscale, mscore)) + geom_point()
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_1.png]]
+
+#+BEGIN_SRC R :results output graphics :file plot_2.png :tangle junk.R
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7)
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_2.png]]
+
+#+BEGIN_SRC R :results output graphics :file plot_3.png :tangle junk.R
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7) +
+      geom_violin(aes(fill = subscale), alpha = .2) +
+      stat_summary(fun.y = 'median', geom = "point", size = 5)
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_3.png]]
+
+#+BEGIN_SRC R :results output graphics :file plot_4.png :tangle junk.R
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7) +
+      geom_violin(aes(fill = subscale), alpha = .2) +
+      stat_summary(fun.y = 'median', geom = "point", size = 5) +
+      coord_flip()
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_4.png]]
+
+#+BEGIN_SRC R :results output graphics :file plot_5.png :tangle junk.R
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7) +
+      geom_violin(aes(fill = subscale), alpha = .2) +
+      stat_summary(fun.y = 'median', geom = "point", size = 5) +
+      coord_flip() + 
+      facet_wrap(~year)
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_5.png]]
+
+#+BEGIN_SRC R :results output graphics :file plot_6.png
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7) +
+      geom_violin(aes(fill = subscale), alpha = .2) +
+      stat_summary(fun.y = 'median', geom = "point", size = 5) +
+      coord_flip() + 
+      facet_wrap(~year) +
+      guides(color = FALSE, fill = FALSE)
+#+END_SRC
+
+#+RESULTS:
+[[file:plot_6.png]]
+
+
+** Final Standalone R Script
+
+[[file:stars/stars_analysis.R][Click here to download]]
+
+#+BEGIN_SRC R :tangle junk.R :eval never :exports code
+  library("dplyr")   # data processing
+  library("tidyr")   # data reshaping
+  library("ggplot2") # plotting
+
+  scales <- read.csv("subscales.csv", stringsAsFactors = FALSE)
+
+  stars_wide <- read.csv("stars.csv", stringsAsFactors = FALSE)
+
+  stars <- stars_wide %>% gather(item_id, score, I01:I51)
+
+  stars_sub <- inner_join(scales, stars, "item_id")
+
+  ## calculate subscale means per student_id and year
+  stars_means <- stars_sub %>%
+     group_by(student_id, year, subscale) %>%
+     summarise(mscore = mean(score))
+
+  ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+      geom_jitter(alpha = .7) +
+      geom_violin(aes(fill = subscale), alpha = .2) +
+      stat_summary(fun.y = 'median', geom = "point", size = 5) +
+      coord_flip() + 
+      facet_wrap(~year) +
+      guides(color = FALSE, fill = FALSE)
+#+END_SRC
+
+** R Markdown file
+
+[[file:stars/stars_analysis.Rmd][Click here to download]]
+
+#+BEGIN_EXAMPLE
+---
+title: "Report on Stats Anxiety"
+author: "Dale"
+date: "December 8, 2015"
+output: pdf_document
+bibliography: stars.bib
+csl: apa.csl
+---
+
+We used the following add-on packages to perform the analyses and create the graphics.
+
+```{r message=FALSE}
+library("dplyr")   # data processing
+library("tidyr")   # data reshaping
+library("ggplot2") # plotting
+```
+
+Students from years 1, 2, and 3 were given the STARS statistical anxiety rating scale by @cruise_et_al_1985.
+
+```{r, echo=FALSE, warning=FALSE}
+scales <- read.csv("subscales.csv", stringsAsFactors = FALSE)
+
+stars_wide <- read.csv("stars.csv", stringsAsFactors = FALSE)
+
+stars <- stars_wide %>% gather(item_id, score, I01:I51)
+
+stars_sub <- inner_join(scales, stars, "item_id")
+
+## calculate subscale means per student_id and year
+stars_means <- stars_sub %>%
+   group_by(student_id, year, subscale) %>%
+   summarise(mscore = mean(score))
+```
+
+Descriptive statistics for the subscales are below:
+
+```{r, echo = FALSE, results = 'asis'}
+dstats <- stars_means %>%
+  group_by(subscale) %>%
+  summarise(m = mean(mscore, na.rm = TRUE),
+            med = median(mscore, na.rm = TRUE),
+            sdev = sd(mscore, na.rm = TRUE))
+knitr::kable(dstats)
+```
+
+```{r, echo = FALSE}
+max_anx <- max(dstats$m)
+highest <- dstats$subscale[dstats$m == max_anx]
+```
+
+Students exhibited greatest anxiety on the `r highest` subscale, with a mean anxiety rating of `r round(max_anx, 2)`.
+
+# Plot
+
+Here is a plot of the results by year:
+
+```{r, echo = FALSE, warning = FALSE}
+ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = 'median', geom = "point", size = 5) +
+    coord_flip() + 
+    facet_wrap(~year) +
+    guides(color = FALSE, fill = FALSE)
+```
+#+END_EXAMPLE
+
+* References
+
+Cruise, R. J., Cash, R. W., & Bolton, D. L. (1985). Development and validation of an instrument to measure
+statistical anxiety. /Proceedings of the American Statistical Association, Section on Statistical Education, Las Vegas, NV./

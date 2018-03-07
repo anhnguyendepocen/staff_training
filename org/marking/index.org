@@ -1,0 +1,508 @@
+#+title: Using R in Student Assessment
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:t H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle script.R
+
+* Introduction
+
+In this lesson, we will apply some of what you learned in [[http://talklab.psy.gla.ac.uk/r_training/the_basics/index.html]["the basics (part 1 and 2)"]] to analyze assessments for an undergraduate course in statistics.
+
+Make sure you have the following add-on packages installed: =dplyr=, =tidyr=, =ggplot2=.
+
+Topics we will be covering:
+
+- data input/output
+- reshaping data
+- relational data, including different types of joins
+- data summaries
+- visualization using =ggplot2=
+
+Background reading:
+
+- [[http://r4ds.had.co.nz/relational-data.html][Grolemund and Wickham, "Relational Data", in R for Data Science]]
+- [[http://vita.had.co.nz/papers/tidy-data.html][Wickham's "Tidy Data"]]
+
+*NOTE: The full script containing all reproducible code can be downloaded [[http://talklab.psy.gla.ac.uk/r_training/marking/script.R][here]]*
+
+** Why I chose these data
+
+Data analytic skills are best learned by analyzing one's own data.  Marking assignments, combining scores into final assessments, and evaluating participation in a course are all activities with which staff routinely perform, and staff have access to a variety of data related to their own teaching activities.
+
+* Calculating grades
+
+We often think of analyzing data in terms of generating graphs and computing statistics, but in reality, this is a fairly small part of what counts as data analysis.  When dealing with large datasets you will probably spend a proportionally larger amount of time just /preparing/ the data than you will spend visualizing it or computing statistics.  
+
+Most people have some kind of idiosyncratic and ad-hoc system in place for data preparation; however, these systems are often error-prone, inefficient, and not reproducible.  It pays to learn how to do things in a more systematic way: it will make you a much more efficient and confident data analyst.
+
+In this lesson, we will be working with anonymized grades from my undergraduate statistics course at the University of Glasgow.
+
+** Our tasks
+
+1. Grading
+   - Homework: Students were given 8 homework assignments.  The policy
+     for calculating their final homework grade was to drop the lowest
+     score, then take the average of the remaining scores.
+   - Final grade: The single overall homework score should be combined
+     with the exam score, with the weightings of 60%\nbsp{}Exam,
+     40%\nbsp{}Homework.
+
+** The data archive
+
+Download the file [[file:marking_data.zip][marking_data.zip]] and unzip it somewhere where you can find it.  Then, make sure you set your working directory to the marking_data folder.  If you've forgotten how to do this, see [[http://talklab.psy.gla.ac.uk/r_training/the_basics/index.html#orgheadline24][here]].
+
+You can check if everything worked correctly by typing =list.files()= in your console window.  You should see as a result:
+
+#+BEGIN_SRC R :exports code :results output :tangle junk.R :eval never
+  list.files()
+#+END_SRC
+
+#+BEGIN_SRC R :exports results :results output :tangle junk.R
+  list.files("marking_data")
+#+END_SRC
+
+#+RESULTS:
+: [1] "bbb.csv"      "exam.csv"     "full_log.csv" "homework.csv" "scale.csv"   
+: [6] "slides.csv"   "users.csv"
+
+Here is a description of the files.
+
+| =exam.csv=     | Assessment scores on homework (40%) and exam (60%)                  |
+| =homework.csv= | Assessment scores on all 8 homework assignments                     |
+| =scale.csv=    | Marking scale translating letter mark to 1-22 point scale           |
+| =users.csv=    | (anonymized) list of all students; names, IDs are fake              |
+
+** Loading it
+
+- We will be working with the =read.csv()= function to read in the data from these files.  For better performance, including not having to constantly remember to set =stringsAsFactors = FALSE=, check out the =readr= package, which contains the alternative function =read_csv()= (note the underscore instead of the dot between =read= and =csv=).
+
+First, lets look at the list of users.
+
+#+name: libheads
+#+BEGIN_SRC R :exports none
+  ## don't forget to set your working directory to marking_data
+  library("dplyr") # to get access to pipes and data processing functions
+  library("tidyr") # because we'll need to reshape the data
+  library("ggplot2") # for visualization
+#+END_SRC
+
+#+BEGIN_SRC R :results silent :exports none :tangle junk.R
+  users <- read.csv("marking_data/users.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :eval never :tangle junk.R
+  users <- read.csv("users.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(users)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 433
+: Variables: 3
+: $ First.name (chr) "Erfaab", "Riaeiaa", "Mvegamg", "Konns", "Riio", "Kci", ...
+: $ Surname    (chr) "Meleian", "Galaoh", "Aeai", "Jonaysao", "Menn", "Dmrina...
+: $ ID.number  (int) 8209037, 5488, 5256885, 3577138, 8160518, 935486, 202986...
+
+Two mysteries.
+
+First, there are far more users (433) than there were students enrolled in this class (130); the students in the class are a subset of all of the users in this table.  For whatever reason, it was not possible to download only the subset of users enrolled in the course, so we'll have to deal with the superset.  This turns out not to be a big problem because of the way we'll be joining the tables together, so we'll leave it for now.
+
+Second, some of the the student ID numbers (in the field =ID.number=) are weird.  Student IDs are 7 digit numbers, sometimes with leading zeroes ("0012345" is a valid student ID number).  Annoyingly, =read.csv()= has guessed that =ID.number= should be stored as an integer, which causes the leading zeroes to be dropped.  How can we overrule this behavior?  If you look at the documentation for =read.csv()= (type =?read.csv()=), you will see an argument =colClasses=.  We will use this argument to force R to load in the ID number as a character.
+
+#+BEGIN_SRC R :exports none :results silent
+  users <- read.csv("users.csv", stringsAsFactors = FALSE,
+     colClasses = rep("character", 3))
+#+END_SRC
+
+#+BEGIN_SRC R :exports none :tangle junk.R
+  glimpse(users)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 433
+: Variables: 3
+: $ First.name (chr) "Erfaab", "Riaeiaa", "Mvegamg", "Konns", "Riio", "Kci", ...
+: $ Surname    (chr) "Meleian", "Galaoh", "Aeai", "Jonaysao", "Menn", "Dmrina...
+: $ ID.number  (chr) "8209037", "0005488", "5256885", "3577138", "8160518", "...
+
+** Calculating homework grades
+
+#+BEGIN_SRC R :exports none :results silent :tangle junk.R
+  hwk <- read.csv("marking_data/homework.csv", stringsAsFactors = FALSE,
+                  colClasses = c("character", "integer",
+                                 "character", "integer"))
+#+END_SRC
+
+#+BEGIN_SRC R :exports code :eval never
+  hwk <- read.csv("homework.csv", stringsAsFactors = FALSE,
+                  colClasses = c("character", "integer",
+                                 "character", "integer"))
+#+END_SRC
+
+Now glimpse it:
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(hwk)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 1,048
+: Variables: 4
+: $ SID    (chr) "0131260", "0131260", "0131260", "0131260", "0131260", "0131...
+: $ HWID   (int) 3, 5, 8, 7, 10, 4, 6, 9, 3, 6, 7, 4, 10, 8, 5, 9, 3, 5, 6, 7...
+: $ mark   (chr) "A5", "B1", "B1", "B2", "B2", "C1", "E2", "E3", "A1", "A1", ...
+: $ points (int) 18, 17, 17, 16, 16, 14, 7, 6, 22, 22, 22, 21, 18, 11, 10, 5,...
+
+Our task is to calculate a single composite homework grade by dropping each student's lowest score and then calculating a mean.  This would be laborious to do by hand, as there are 130 students in the class, not to mention error-prone.  So the first thing we'll do is write a script that does that for us.  We can break the task into the following steps:
+
+1. Create a table with each student's top 7 grades
+2. Calculate mean grades by subject
+
+Before we do this, let's just check the integrity of our data: let's make sure we have 8 scores for each of our 130 students.
+
+#+BEGIN_SRC R :tangle junk.R
+  ## first, let's make sure we have all 8 scores for all students
+  hcounts <- hwk %>% count(SID)
+  head(hcounts)
+
+  hcounts %>% select(n) %>% distinct()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Source: local data frame [6 x 2]
+
+      SID     n
+    (chr) (int)
+1 0131260     8
+2 0199830     8
+3 0287616     8
+4 0382761     8
+5 0525500     8
+6 0576198     8
+Source: local data frame [1 x 1]
+
+      n
+  (int)
+1     8
+#+end_example
+
+OK, we're satisfied that we have a full set of scores for students.  Now let's do step 1: find the top 7 grades for each student.  We will use the =group_by()= and =slice()= functions from the R package =dplyr=.
+
+We're going to do something slightly more complicated that we've done in the past; in particular, we are going to use the =windowed= functionality of =dplyr=.  (For background, see the =dplyr= vignette 'introduction', particularly the section on "Grouped operations".)  What does this mean?  
+
+Well, normally when you use an function such as =mean()= or =arrange()=, it performs the operation (e.g., calculate a summary statistic, re-arrange the rows) over the entire table.  For instance, =summarize(hwk, lowest = min(points))= will give us the lowest value of points over all 1048 observations in the table.
+
+But what we want is the top 7 scores for *each student*, so what we need to do is to apply =arrange()= to each student's data individually, and then we will =slice()= off the top 7.  This is called a "windowed" operation because each student's data is an individual "window" over which the =arrange()= operation is applied.  Let's try out =slice()=, =arrange()= and =group_by()= to get a feeling for them before we try to use them together.
+
+#+BEGIN_SRC R :tangle junk.R :results silent
+  ## unwindowed versions
+  slice(hwk, 1:10) # first 10 rows
+  hwk %>% arrange(points) ## ascending order
+  hwk %>% arrange(desc(points))
+
+  hwk %>% arrange(points) %>% slice(1:10) ## lowest 10 scores
+  hwk %>% arrange(desc(points)) %>% slice(1:10) ## top 10 scores
+
+  hwk %>% slice(c(11, 13, 1000)) ## pull out by row number
+
+  ## the first score listed for each student
+  hwk %>% group_by(SID) %>% slice(1)
+  hwk %>% group_by(SID) %>% slice(8) # last one listed
+
+  ## sort by SID, desc(points)
+  hwk %>% arrange(SID, desc(points))
+  hwk %>% group_by(SID) %>% arrange(desc(points))
+#+END_SRC
+
+#+BEGIN_SRC R
+  ## extract each student's "top 7" scores
+  top_7 <- hwk %>%
+      group_by(SID) %>%
+      arrange(desc(points)) %>%
+      slice(1:7) %>% ungroup()
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(top_7)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 917
+: Variables: 4
+: $ SID    (chr) "0131260", "0131260", "0131260", "0131260", "0131260", "0131...
+: $ HWID   (int) 3, 5, 8, 7, 10, 4, 6, 3, 6, 7, 4, 10, 8, 5, 3, 5, 6, 7, 8, 4...
+: $ mark   (chr) "A5", "B1", "B1", "B2", "B2", "C1", "E2", "A1", "A1", "A1", ...
+: $ points (int) 18, 17, 17, 16, 16, 14, 7, 22, 22, 22, 21, 18, 11, 10, 22, 2...
+
+We have 917 observations, and 917 / 7 = 131, so we can be confident that the code worked as intended.
+
+The final =ungroup()= operation is not strictly necessary, but it represents good practice.  When you need to perform a windowed operation, it's a good idea to get rid of the groupings after you are finished.  Also, for technical reasons, when you do a windowed =slice()= on a table, you should regroup the data by =SID= or you will get an error message that your data frame is "corrupt."
+
+OK, we're ready to calculate a mean grade for each student.
+
+#+BEGIN_SRC R :tangle junk.R
+  top_7 %>% summarize(mpoints = mean(points)) ## wrong!
+#+END_SRC
+
+Whoops, we need to re-group the data by SID.
+
+#+BEGIN_SRC R 
+  hwk_grades <- top_7 %>% 
+      group_by(SID) %>% 
+      summarize(mpoints = mean(points))
+#+END_SRC
+
+Note something odd here: there are 131 grades, but only 130 students enrolled in the course.  We'll revisit this mystery later.
+
+We're getting close; =hwk_grades= is /almost/ what we want.  Actually it would be great if we could assign letter marks (A1--A5, B1--B3, ... G2) based on =mpoints= because that's what we need to report.  How can we do this?
+
+Well, we first need to round off =mpoints= and make it an =integer= type instead of a real number (type =numeric=).  Then we can join it with a marking scale, which can be loaded in from the file =scale.csv.=.
+
+#+BEGIN_SRC R :exports none :results silent :tangle junk.R
+  mscale <- read.csv("marking_data/scale.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :exports code :eval never
+  mscale <- read.csv("scale.csv", stringsAsFactors = FALSE)
+#+END_SRC
+
+#+BEGIN_SRC R :exports results :tangle junk.R :results value :colnames yes
+  mscale
+#+END_SRC
+
+#+RESULTS:
+| mark | points |
+|------+--------|
+| A1   |     22 |
+| A2   |     21 |
+| A3   |     20 |
+| A4   |     19 |
+| A5   |     18 |
+| B1   |     17 |
+| B2   |     16 |
+| B3   |     15 |
+| C1   |     14 |
+| C2   |     13 |
+| C3   |     12 |
+| D1   |     11 |
+| D2   |     10 |
+| D3   |      9 |
+| E1   |      8 |
+| E2   |      7 |
+| E3   |      6 |
+| F1   |      5 |
+| F2   |      4 |
+| F3   |      3 |
+| G1   |      2 |
+| G2   |      1 |
+
+#+BEGIN_SRC R
+  hwk_grades2 <- hwk_grades %>%
+      mutate(points = as.integer(round(mpoints)))  
+  ## note: round() uses "go to the even number" rule for
+  ## dealing with .5 values
+#+END_SRC
+
+OK, now we've made it an integer; all we need to do is combine it with the marking scale.  If we were to do this by hand, we might, for example, open =hwk_grades2= in a spreadsheet, create a new column called =mark=, and then go row-by-row through the spreadsheet, manually looking up the value in the marking scale corresponding to =points= and typing it into your new column.  Not only would this be a colossal waste of time, but it would also be error prone, especially toward the end as your attentional resources are drained by this mind-numbing task.  Wouldn't it be nice to have a robot assistant who could do this for you?
+
+You can accomplish this in R with just one simple line of code.  Note that what we need to do, in essence, is join together information across two separate tables: =hwk_grades2= and =mscale=.  We can join information using the =inner_join()= function in =dplyr=.  What we will do is called a /mutating join/ because we will essentially create a new column in =hwk_grades2= containing the mark corresponding to =points=.  The code is below: try it out and see what happens.
+
+#+BEGIN_SRC R :results silent
+  hwk_marks <- inner_join(hwk_grades2, mscale, "points")
+#+END_SRC
+
+When you perform a join, you need to name the two tables you want to join, and state how you wish to combine them by specifying a *key*.  In the current case, we want to use "points" as a key.  In effect, =inner_join()= does automatically what you would have done if you did this task by hand: it looks at each row of =hwk_grades2= and finds the row in =mscale= that matches on =points=, and then concatenates all of the columns from =mscale= onto =hwk_grades2=.  That's really all it takes to accomplish this!  You can learn more about joins by reading [[http://r4ds.had.co.nz/relational-data.html][this chapter on Relational Data]] of Grolemund and Wickham's book on R For Data Science.
+
+At this point, you might want to save your results to a CSV file.
+
+#+BEGIN_SRC R :eval never
+  write.csv(hwk_marks, "homework_mark.csv", row.names = FALSE)
+#+END_SRC
+
+** Reshaping the homework table
+
+OK, one more thing before we finish with the homework grades.  Let's say you need to share all the homework grades for each student with another member of staff.  A table in long format with over 1,000 rows would not be very useful for this person, and they may not know how to reshape it.  So let's reshape the =hwk= table into wide format so there is one line per student.  To do this, we'll use the =spread()= function from the =tidyr= add on package.
+
+It's easy...
+
+#+BEGIN_SRC R :exports code :results silent
+  hwk_wide <- hwk %>% select(-mark) %>%
+      spread(HWID, points)
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  head(hwk_wide)
+#+END_SRC
+
+#+RESULTS:
+:       SID  3  4  5  6  7  8  9 10
+: 1 0131260 18 14 17  7 16 17  6 16
+: 2 0199830 22 21 10 22 22 11  5 18
+: 3 0287616 22 19 22 22 22 20 11 16
+: 4 0382761 10 19 15 22 21 22  5 13
+: 5 0525500 19 16 21 20  1 10  5  9
+: 6 0576198 22 18 22 22 22 22 16 22
+
+** Combining homework and exam scores
+
+In this section, we will combine the homework score that we just calculated with the exam score.  This is just an easy =inner_join()=.  Then, we'll look at distributions, so in addition to =dplyr=, make sure you've loaded in the add on package =ggplot2=.
+
+We will need to load in the exam scores.  Because the file includes student IDs with leading zeroes, we should remember to set =colClasses= so that the IDs aren't loaded in as integers.
+
+#+BEGIN_SRC R :exports none :results silent :tangle junk.R
+  exam <- read.csv("marking_data/exam.csv", stringsAsFactors = FALSE,
+            colClasses = c("character", "character", "integer"))
+#+END_SRC
+
+#+BEGIN_SRC R :exports code :eval never
+  exam <- read.csv("exam.csv", stringsAsFactors = FALSE,
+            colClasses = c("character", "character", "integer"))
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(exam)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 133
+: Variables: 3
+: $ SID    (chr) "0131260", "0199830", "0287616", "0382761", "0525500", "0576...
+: $ mark   (chr) "B3", "A3", "A5", "B1", "D2", "A1", "E1", "A4", "A2", "B2", ...
+: $ points (int) 15, 20, 18, 17, 10, 22, 8, 19, 21, 16, 15, 17, 16, 18, 17, 1...
+
+OK, let's join this with the =hwk_marks= table.
+
+#+BEGIN_SRC R :tangle junk.R
+  grades <- inner_join(hwk_marks, exam, "SID")
+
+  glimpse(grades)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 130
+: Variables: 6
+: $ SID      (chr) "0131260", "0199830", "0287616", "0382761", "0525500", "05...
+: $ mpoints  (dbl) 15.00000, 18.00000, 20.42857, 17.42857, 14.28571, 21.42857...
+: $ points.x (int) 15, 18, 20, 17, 14, 21, 16, 20, 21, 21, 19, 19, 19, 21, 17...
+: $ mark.x   (chr) "B3", "A5", "A3", "B1", "C1", "A2", "B2", "A3", "A2", "A2"...
+: $ mark.y   (chr) "B3", "A3", "A5", "B1", "D2", "A1", "E1", "A4", "A2", "B2"...
+: $ points.y (int) 15, 20, 18, 17, 10, 22, 8, 19, 21, 16, 15, 17, 16, 18, 17,...
+
+Note what happened here: both tables have fields named =points= and =mark=, and so in the resulting table, =inner_join()= created =points.x= for the field from =hwk_marks= and =points.y= for the one from =exam=.  We should rename them to something more useful.
+
+#+BEGIN_SRC R :tangle junk.R
+  grades <- inner_join(hwk_marks, exam, "SID") %>%
+      select(SID, Homework = points.x, Exam = points.y)
+
+  glimpse(grades)
+#+END_SRC
+
+#+RESULTS:
+: Observations: 130
+: Variables: 3
+: $ SID      (chr) "0131260", "0199830", "0287616", "0382761", "0525500", "05...
+: $ Homework (int) 15, 18, 20, 17, 14, 21, 16, 20, 21, 21, 19, 19, 19, 21, 17...
+: $ Exam     (int) 15, 20, 18, 17, 10, 22, 8, 19, 21, 16, 15, 17, 16, 18, 17,...
+
+OK, next thing to do: apply the weighting (60% Exam, 40% Homework).  We'll create a new column, =Final=, which will have the resulting composite grade.  To add a new column, we use the =dplyr= function =mutate()=.  As above, we'll need to round it off and convert it to an integer while we're at it.
+
+#+BEGIN_SRC R :tangle junk.R
+  grades <- inner_join(hwk_marks, exam, "SID") %>%
+      select(SID, Homework = points.x, Exam = points.y) %>%
+      mutate(Final = as.integer(round(.6 * Exam + .4 * Homework)))
+
+  glimpse(grades)
+#+END_SRC
+
+#+RESULTS:
+:  Error: could not find function "%>%"
+: Error: could not find function "glimpse"
+
+Last thing: as above, we want a letter grade, so we'll join grades to
+the marking scale, keyed by =Final=.  Note, however, that the key we want to use has different names in the two tables: it's called =Final= in =grades=, but =points= in scale.  So we have to write the join argument in a way that recognizes this.
+
+#+BEGIN_SRC R 
+  grades <- inner_join(hwk_marks, exam, "SID") %>%
+      select(SID, Homework = points.x, Exam = points.y) %>%
+      mutate(Final = as.integer(round(.6 * Exam + .4 * Homework))) %>%
+      inner_join(mscale, c(Final = "points"))
+#+END_SRC
+
+#+BEGIN_SRC R :tangle junk.R
+  glimpse(grades)
+#+END_SRC
+
+#+RESULTS:
+: Error: could not find function "glimpse"
+
+OK, we're done!  Let's look at the grade distributions with =ggplot2=.  In case you need a refresher, look [[http://talklab.psy.gla.ac.uk/r_training/the_basics/#orgheadline29][here]].
+
+#+BEGIN_SRC R :exports both :results output graphics :file grade_distribution.png
+  ggplot(grades, aes(Final)) + geom_bar() +
+      scale_x_discrete(limits = 1:22)
+#+END_SRC
+
+#+RESULTS:
+[[file:grade_distribution.png]]
+
+Finally, let's resolve the mystery of the extra student.  We have 131 homework scores but only 130 exam scores.  When we did the inner join between =hwk_marks= and =exam=, that one student was dropped because there was not corresponding info in both tables. Which student was this?  In other words, which row is in =hwk_marks= that does not appear in =grades=?
+
+#+BEGIN_SRC R
+  anti_join(hwk_marks, exam, "SID")
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [1 x 4]
+: 
+:       SID  mpoints points  mark
+:     (chr)    (dbl)  (int) (chr)
+: 1 4243474 10.28571     10    D2
+
+And who is this student with ID '4243474'?
+
+#+BEGIN_SRC R
+  filter(users, ID.number == "4243474")
+#+END_SRC
+
+#+RESULTS:
+:   First.name Surname ID.number
+: 1     Fiyaad    Fhvn   4243474
+
+AHA, Fiyaad Fhvn was a student who failed to turn up to the exam, but with good cause.
+
+We're done with grades; we can save =grades= to a csv file and send it off to be uploaded into the campus database so that grades can be reported.  
+
+** Extra practice to do on your own
+
+1. There is another, less straightforward way to accomplish the homework grading.  See if you can calculate composite scores in this other way:
+
+ a. Create a table containing the minimum score for each student using
+   windowed filtering (=group_by()= + =filter()=).  Keep in mind that
+   individual students might have multiple assignment with the same
+   minimum score, so (a windowed) =slice()= might come in handy.
+
+ b. Get rid of those scores from the =hwk= data frame (an
+   =anti_join()= might be helpful here!)
+
+ c. Calculate summary statistics for each subject.
+
+2. It would be cool if the bars in the grade distribution plotted above could be color-coded based on the mark class A--G (e.g., green for A, blue for B, red for C, and so on).  Look at the documentation for the =substr()= function (type =?substr=) to see how to pull out the first character of the =mark= field; use =mutate()= to create a new variable.  Alter the aesthetics of the call to =ggplot()= so that the bars are color coded by mark class.
+
+

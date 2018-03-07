@@ -1,0 +1,375 @@
+#+title: "Bring Your Own Data (BYOD) Session"
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:t H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle junk.R
+
+Here is a recap of some of the things we went over in this session (as far as I can reconstruct them, anyway)...
+
+* Data tidying
+
+This first question was from Heather (who kindly agreed to share the data).  This was survey data from two waves, with each wave stored in a separate spreadsheet, in wide format (one row per respondent).  [[file:heather_survey_data.zip][Click here to download the data]], and [[file:script.R][here to download the reproducible script]].
+
+What Heather wanted to know was how to figure out which respondents had filled in both waves.  We will look at how to answer this question using joins, and also look at how we can combine data from both waves into one table after reshaping it from wide to long.
+
+First let's load in the packages we want to use.
+
+#+BEGIN_SRC R :exports code :tangle script.R
+  library("readxl") ## for reading in directly from excel
+  library("dplyr")  ## for piping and data manipulation
+  library("tidyr")  ## for re-shaping from wide to long
+#+END_SRC
+
+After some initial cleaning of the excel files (specifically, renaming columns) we used the =read_excel()= function in the =readxl= package to directly import the data into R.  Note that the data we want is in sheet 2 of the workbook, which we can specify in the call to =read_excel()=.
+
+#+BEGIN_SRC R 
+  wave_1 <- read_excel("GA time 1.xlsx", sheet = 2L)
+  glimpse(wave_1)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Observations: 206
+Variables: 12
+$ Subject Specialist                                      (chr) "1 Very Con...
+$ Investigative                                           (chr) "1 Very Con...
+$ Independent and Critical Thinker                        (chr) "1 Very Con...
+$ Resourceful and Responsible                             (chr) "1 Very Con...
+$ Effective Communicator                                  (chr) "1 Very Con...
+$ Overall confidence as a member of the student community (chr) "1 Very Con...
+$ Adaptable                                               (chr) "1 Very Con...
+$ Experienced Collaborator                                (chr) "1 Very Con...
+$ Ethically and socially aware                            (chr) "1 Very Con...
+$ Reflective Learner                                      (chr) "1 Very Con...
+$ Which gender do you identify with, if any?              (chr) NA, NA, NA,...
+$ ID                                                      (chr) NA, NA, NA,...
+#+end_example
+
+We can see that there are some NAs at the beginning of the file corresponding to junk data that we need to filter out.  Let's do this by adding =dplyr::filter()= to our pipeline.  Then, we will print out the respondent identifiers: each respondent was asked to enter their initials and age.
+
+#+BEGIN_SRC R :tangle junk.R
+  wave_1 <- read_excel("GA time 1.xlsx", sheet = 2L) %>%
+    filter(!is.na(ID))
+
+  wave_1$ID
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ 
+ [1] "AM 20"     "BK 40"     "CG 20"     "SD 18"     "JF 19"     "SM, 20"   
+  [7] "DB 19"     "ML 19"     "REL 20"    "CP 19"     "R.G. 22"   "EJB 19"   
+ [13] "NC 20"     "HSS 23"    "HM 30"     "AL, 21"    "MS 18"     "JG 28"    
+ [19] "JP 19"     "KM 31"     "MB 18"     "EN, 19"    "MCH 19"    "LK 20"    
+ [25] "RT 20"     "JFG, 19"   "20"        "EF 19"     "LP 23"     "RM 19"    
+ [31] "NC 19"     "M.C 20"    "AR 19"     "19 FR"     "MA 20"     "AM 19"    
+ [37] "AWP19"     "MA 19"     "JJ20"      "RP 21"     "MB19"      "RM 20"    
+ [43] "CS 23"     "MC 21"     "SP 19"     "EB 19"     "CS 28"     "KB19"     
+ [49] "FG 20"     "MV, 19"    "NM, 21"    "rn 21"     "SDF 24"    "TB 35"    
+ [55] "JL 20"     "AB 20"     "N32"       "SS"        "SW 19"     "JS. 20"   
+ [61] "ER 19"     "MSZ23"     "CC, 19"    "Fm 49"     "OAM 28"    "x 24"     
+ [67] "WL 43"     "DL 19"     "AM 18"     "SB 19"     "PG 19"     "SR 19"    
+ [73] "KW 20"     "XS 20"     "AW 20"     "HR 19"     "EH 19"     "JB, 19"   
+ [79] "CT, 21"    "S.T 19"    "RM 18"     "D.A. 22"   "hj 19"     "JL 19"    
+ [85] "SOH 25"    "HO 20"     "BG 21"     "LG 19"     "G.S. 20"   "CD 19"    
+ [91] "EM, 20"    "SLG 19"    "NO 20"     "JR 19"     "SF 19"     "CC, 19"   
+ [97] "AZ 20"     "KD 19"     "AA 19"     "GC 19"     "RG 19"     "JM 23"    
+[103] "AJ 19"     "EM 20"     "RB 19"     "EJ 19"     "GA 20"     "S.L. 20"  
+[109] "HFEN, 19"  "DI 20"     "EJ 20"     "VW 20"     "c 20"      "HK  19"   
+[115] "FM 20"     "saim 23"   "PM 31"     "JC19"      "KM 19"     "pvj21"    
+[121] "AL 19"     "NB 19"     "nf 18"     "MN 20"     "HE 20"     "MM20"     
+[127] "Cc 21"     "AF 19"     "AP 21"     "KD 21"     "A.H. 20"   "J.J.K. 21"
+[133] "AG 20"     "ZM20"      "SI19"      "YT 19"     "SG20"      "LM 19"    
+[139] "K.A. 21"   "SG, 19"    "C.F.D. 20" "nh 21"     "EK, 20"    "GM 19"    
+[145] "EV 22"     "KS 20"     "KW 20"     "IM 20"     "DC 20"     "SL 19"    
+[151] "MR21"      "HM, 19"    "SZ 21"     "AL 20"     "F19"       "C.H.T 23" 
+[157] "cs 28"     "ZW 19"     "EP 20"     "LFA 20"    "JS 21"     "RF 20"    
+[163] "EAM 19"    "AA 22"     "H.S. 20"   "GM19"      "fw 19"     "JA 19"    
+[169] "TM 21"     "CM 29"     "RF 19"     "ELC 19"    "MB 19"     "IB 19"    
+[175] "AM 19"     "RA 35"     "SB19"      "AH 20"     "RB 30"     "SC 21"    
+[181] "aq 19"     "LM 19"     "TS 21"     "DQ19"      "ER 20"     "MK 20"    
+[187] "HM 19"     "28"        "AG 19"
+#+end_example
+
+OK, we can see some problems here... some people entered the information in with commas, some used a space, some used dots... if they didn't do the exact same thing in both waves, then we won't be able to match them, because the strings have to be exactly the same to match.  So we need to standardize the identifiers.  We will get rid of all commas, spaces, and dots and then make 
+sure the letters are all in upper case using the =gsub()= function, and store the result in a new column called =new_id=.  We will pass the result of =gsub()= to the =toupper()= function which converts all lowercase characters in a string to uppercase.  Then we can get rid of the old ID column using =dplyr::select()=.
+
+#+BEGIN_SRC R :exports code :tangle script.R
+  wave_1 <- read_excel("GA time 1.xlsx", sheet = 2L) %>%
+    filter(!is.na(ID)) %>%
+    mutate(new_id = toupper(gsub("[\\., ]", "", ID))) %>%
+    select(-ID)
+#+END_SRC
+
+#+RESULTS:
+
+#+BEGIN_SRC R
+  wave_1$new_id
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+  [1] "AM20"   "BK40"   "CG20"   "SD18"   "JF19"   "SM20"   "DB19"   "ML19"  
+  [9] "REL20"  "CP19"   "RG22"   "EJB19"  "NC20"   "HSS23"  "HM30"   "AL21"  
+ [17] "MS18"   "JG28"   "JP19"   "KM31"   "MB18"   "EN19"   "MCH19"  "LK20"  
+ [25] "RT20"   "JFG19"  "20"     "EF19"   "LP23"   "RM19"   "NC19"   "MC20"  
+ [33] "AR19"   "19FR"   "MA20"   "AM19"   "AWP19"  "MA19"   "JJ20"   "RP21"  
+ [41] "MB19"   "RM20"   "CS23"   "MC21"   "SP19"   "EB19"   "CS28"   "KB19"  
+ [49] "FG20"   "MV19"   "NM21"   "RN21"   "SDF24"  "TB35"   "JL20"   "AB20"  
+ [57] "N32"    "SS"     "SW19"   "JS20"   "ER19"   "MSZ23"  "CC19"   "FM49"  
+ [65] "OAM28"  "X24"    "WL43"   "DL19"   "AM18"   "SB19"   "PG19"   "SR19"  
+ [73] "KW20"   "XS20"   "AW20"   "HR19"   "EH19"   "JB19"   "CT21"   "ST19"  
+ [81] "RM18"   "DA22"   "HJ19"   "JL19"   "SOH25"  "HO20"   "BG21"   "LG19"  
+ [89] "GS20"   "CD19"   "EM20"   "SLG19"  "NO20"   "JR19"   "SF19"   "CC19"  
+ [97] "AZ20"   "KD19"   "AA19"   "GC19"   "RG19"   "JM23"   "AJ19"   "EM20"  
+[105] "RB19"   "EJ19"   "GA20"   "SL20"   "HFEN19" "DI20"   "EJ20"   "VW20"  
+[113] "C20"    "HK19"   "FM20"   "SAIM23" "PM31"   "JC19"   "KM19"   "PVJ21" 
+[121] "AL19"   "NB19"   "NF18"   "MN20"   "HE20"   "MM20"   "CC21"   "AF19"  
+[129] "AP21"   "KD21"   "AH20"   "JJK21"  "AG20"   "ZM20"   "SI19"   "YT19"  
+[137] "SG20"   "LM19"   "KA21"   "SG19"   "CFD20"  "NH21"   "EK20"   "GM19"  
+[145] "EV22"   "KS20"   "KW20"   "IM20"   "DC20"   "SL19"   "MR21"   "HM19"  
+[153] "SZ21"   "AL20"   "F19"    "CHT23"  "CS28"   "ZW19"   "EP20"   "LFA20" 
+[161] "JS21"   "RF20"   "EAM19"  "AA22"   "HS20"   "GM19"   "FW19"   "JA19"  
+[169] "TM21"   "CM29"   "RF19"   "ELC19"  "MB19"   "IB19"   "AM19"   "RA35"  
+[177] "SB19"   "AH20"   "RB30"   "SC21"   "AQ19"   "LM19"   "TS21"   "DQ19"  
+[185] "ER20"   "MK20"   "HM19"   "28"     "AG19"
+#+end_example
+
+OK, that looks a lot better.  Let's do the same for the wave 2 data.
+
+#+BEGIN_SRC R :tangle script.R :exports code
+  wave_2 <- read_excel("GA time 2.xlsx", sheet = 2L) %>%
+    filter(!is.na(ID)) %>%
+    mutate(new_id = toupper(gsub("[\\., ]", "", ID))) %>%
+    select(-ID)
+#+END_SRC
+
+#+RESULTS:
+
+Let's now find out which respondents completed both waves using =dplyr::semi_join()=.  =semi_join(dat1, dat2, key)= will return rows from =dat1= that have a match in =dat2= on =key=.  Note that the weird looking function =`[[`()= at the end of the pipeline (from the package =dplyr=) is just a way of returning a single column ("new_id") instead of the entire table.
+
+#+BEGIN_SRC R :tangle script.R
+  ## which respondents completed both waves?
+  semi_join(wave_1, wave_2, "new_id") %>% 
+    `[[`("new_id") %>% sort()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ 
+ [1] "20"    "AA19"  "AA22"  "AB20"  "AF19"  "AG19"  "AG20"  "AH20"  "AH20" 
+ [10] "AL19"  "AL20"  "AL21"  "AM18"  "AM19"  "AM19"  "AM20"  "AP21"  "AR19" 
+ [19] "AW20"  "AZ20"  "C20"   "CC19"  "CC19"  "CC21"  "CFD20" "CG20"  "CHT23"
+ [28] "CM29"  "CS23"  "CS28"  "CS28"  "CT21"  "DB19"  "DI20"  "DL19"  "EAM19"
+ [37] "EB19"  "EF19"  "EH19"  "EJ19"  "EJ20"  "EJB19" "EM20"  "EM20"  "EN19" 
+ [46] "EP20"  "ER19"  "ER20"  "EV22"  "F19"   "FG20"  "FM20"  "FM49"  "GA20" 
+ [55] "GC19"  "GM19"  "GM19"  "GS20"  "HJ19"  "HK19"  "HM19"  "HM19"  "HO20" 
+ [64] "IB19"  "JA19"  "JB19"  "JC19"  "JFG19" "JG28"  "JJ20"  "JL19"  "JM23" 
+ [73] "JR19"  "JS20"  "JS21"  "KB19"  "KD19"  "KD21"  "KM19"  "KM31"  "KS20" 
+ [82] "KW20"  "KW20"  "LFA20" "LG19"  "LK20"  "LM19"  "LM19"  "LP23"  "MA20" 
+ [91] "MB18"  "MB19"  "MB19"  "MC21"  "ML19"  "MM20"  "MN20"  "MR21"  "MSZ23"
+[100] "MV19"  "NB19"  "NC19"  "NC20"  "NF18"  "NH21"  "NM21"  "NO20"  "PG19" 
+[109] "PM31"  "PVJ21" "RA35"  "RB30"  "REL20" "RF19"  "RF20"  "RG19"  "RG22" 
+[118] "RM18"  "RM19"  "RP21"  "RT20"  "SB19"  "SB19"  "SC21"  "SDF24" "SG19" 
+[127] "SI19"  "SL19"  "SM20"  "SOH25" "SR19"  "SS"    "ST19"  "SW19"  "TM21" 
+[136] "VW20"  "WL43"  "X24"   "XS20"  "YT19"  "ZM20"
+#+end_example
+
+To find out which respondents exist in wave 1 but not wave 2, we use =dplyr::anti_join()=.
+
+#+BEGIN_SRC R :tangle script.R
+  ## which respondents completed wave 1 but not wave 2?
+  anti_join(wave_1, wave_2, "new_id") %>%
+    `[[`("new_id") %>% sort()
+#+END_SRC
+
+#+RESULTS:
+:  
+: [1] "19FR"   "28"     "AJ19"   "AQ19"   "AWP19"  "BG21"   "BK40"   "CD19"  
+:  [9] "CP19"   "DA22"   "DC20"   "DQ19"   "EK20"   "ELC19"  "FW19"   "HE20"  
+: [17] "HFEN19" "HM30"   "HR19"   "HS20"   "HSS23"  "IM20"   "JF19"   "JJK21" 
+: [25] "JL20"   "JP19"   "KA21"   "MA19"   "MC20"   "MCH19"  "MK20"   "MS18"  
+: [33] "N32"    "OAM28"  "RB19"   "RM20"   "RN21"   "SAIM23" "SD18"   "SF19"  
+: [41] "SG20"   "SL20"   "SLG19"  "SP19"   "SZ21"   "TB35"   "TS21"   "ZW19"
+
+Likewise, to find respondents in wave 2 that aren't in wave 1, we use =dplyr::anti_join()= again, but reversing the arguments.
+
+#+BEGIN_SRC R :tangle script.R
+  ## which respondents completed wave 2 but not wave 1?
+  anti_join(wave_2, wave_1, "new_id") %>%
+    `[[`("new_id") %>% sort()
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+ 
+[1] "18MS"  "19"    "19"    "19"    "20CM"  "20TM"  "33"    "AEB19" "AM28" 
+[10] "AMS19" "AO21"  "AR21"  "AS19"  "AW19"  "AZ21"  "BG20"  "C21"   "CD20" 
+[19] "CF20"  "CF25"  "CG"    "CJ19"  "CM20"  "CM20"  "CM25"  "DB20"  "DD20" 
+[28] "DD26"  "DK20"  "EC19"  "EG19"  "ER32"  "ES20"  "ET19"  "ET19"  "FA20" 
+[37] "FR19"  "HS"    "HS23"  "JC20"  "JK21"  "JL"    "JM40"  "KE19"  "KF20" 
+[46] "KT19"  "L20"   "L20"   "LD19"  "LE19"  "LE20"  "LI20"  "LL24"  "LN19" 
+[55] "M22"   "MIB19" "MS21"  "MT19"  "MW29"  "NH20"  "NM19"  "OAM20" "OM20" 
+[64] "PL20"  "RA20"  "RR20"  "RS20"  "SA23"  "SB20"  "SG"    "SK22"  "SM39" 
+[73] "SN20"  "SS19"  "TH20"  "VP19"  "WYK19"
+#+end_example
+
+Next, we would like to combine the datasets, but to do so, we first need to reshape them from wide to long using =tidyr::gather()=.
+
+#+BEGIN_SRC R :tangle script.R :exports code
+  long_1 <- gather(wave_1, question, response, -new_id) %>%
+      mutate(Wave = 1L) %>%
+      arrange(new_id)
+#+END_SRC
+
+Have a look.
+
+#+BEGIN_SRC R
+  head(long_1, 5)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [5 x 4]
+: 
+:   new_id                         question          response  Wave
+:    (chr)                            (chr)             (chr) (int)
+: 1   19FR               Subject Specialist          3 Unsure     1
+: 2   19FR                    Investigative          3 Unsure     1
+: 3   19FR Independent and Critical Thinker 2 Quite confident     1
+: 4   19FR      Resourceful and Responsible 2 Quite confident     1
+: 5   19FR           Effective Communicator          3 Unsure     1
+
+Do the same thing for the data from the second wave.
+
+#+BEGIN_SRC R :tangle script.R :exports code
+  long_2 <- gather(wave_2, question, response, -new_id) %>%
+      mutate(Wave = 2L) %>%
+      arrange(new_id)
+#+END_SRC
+
+Now combine the two tables using =dplyr::bind_rows()=.
+
+#+BEGIN_SRC R :tangle script.R
+  all_data <- bind_rows(long_1, long_2)
+#+END_SRC
+
+* Finding unique rows in a dataset
+
+Another question that was asked today was: How do you eliminate duplicate rows from a dataset in R?  That's easy... use =dplyr::distinct()=.  Here's an example.
+
+#+BEGIN_SRC R
+  dat <- data_frame(A = rep(1:3, 2),
+                    B = rep(1:3, 2))
+
+  print(dat)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Source: local data frame [6 x 2]
+
+      A     B
+  (int) (int)
+1     1     1
+2     2     2
+3     3     3
+4     1     1
+5     2     2
+6     3     3
+#+end_example
+
+We have two copies of each row.  Now get rid of duplicates.
+
+#+BEGIN_SRC R
+  distinct(dat)
+#+END_SRC
+
+#+RESULTS:
+: Source: local data frame [3 x 2]
+: 
+:       A     B
+:   (int) (int)
+: 1     1     1
+: 2     2     2
+: 3     3     3
+
+
+* Going from wide to long with /two/ instead of /one/ key
+
+Next question: If I have data from a 2x2 factorial design in wide format, such that each column is a cell of the design, and I want to go from wide to long, how would I do this?  The problem here is that you need each value to have /two/ instead of /one/ key, which seems tricky because =tidyr::gather()= will only give you one key.
+
+The best solution I can think of would be to use column names that can be deconstructed into two separate factors using =substr()=.
+
+First let's create some made up data and then we'll go from wide to long.
+
+#+BEGIN_SRC R
+  dat <- data_frame(A1B1 = rnorm(8),
+                    A1B2 = rnorm(8),
+                    A2B1 = rnorm(8),
+                    A2B2 = rnorm(8))
+
+  dat_long <- gather(dat, cell, value)
+
+  head(dat_long)
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+Source: local data frame [6 x 2]
+
+   cell      value
+  (chr)      (dbl)
+1  A1B1 -0.2658645
+2  A1B1  0.8829242
+3  A1B1  1.5003184
+4  A1B1  1.4749749
+5  A1B1 -2.0850673
+6  A1B1  1.0506772
+#+end_example
+
+Now the trick: create two variables by splitting the string in the =cell= column.
+
+#+BEGIN_SRC R
+  dat_long <- gather(dat, cell, value) %>%
+      mutate(A = substr(cell, 1, 2),
+             B = substr(cell, 3, 4)) %>%
+      select(-cell)
+
+  head(dat_long)
+#+END_SRC
+
+* Kicking out bad subjects
+
+How do I remove subjects from a table?
+
+Here are two ways to do this, one using =dplyr::filter()=, and the other using =dplyr::anti_join()=.
+
+#+BEGIN_SRC R :exports code
+  ## make up some fake data
+  fake_data <- data_frame(subject_id = seq_len(40))
+
+  ## get rid of bad subjects 1, 7, 21
+  filter(fake_data, !(subject_id %in% c(1L, 7L, 21L)))
+#+END_SRC
+
+That's the first way.  The other way is to use =dplyr::anti_join()=.  This way is useful if you already have another table listing the subjects to be excluded.
+
+#+BEGIN_SRC R :exports code
+  to_exclude <- data_frame(subject_id = c(1L, 7L, 21L))
+
+  anti_join(fake_data, to_exclude, "subject_id")
+#+END_SRC

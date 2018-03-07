@@ -1,0 +1,59 @@
+#+title: R Training
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:nil H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/my_css.css" />
+#+HTML_LINK_HOME: 
+#+HTML_LINK_UP: 
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle junk.R
+
+* Training Sessions
+
+All trainings sessions take place in Boyd Orr, Room 517.
+
+| Mo | Nov 30 | 2015 | 14:00--15:30 | [[file:the_basics/index.org][The basics]], part 1                       |
+| Tu | Dec 08 | 2015 | 13:00--14:30 | The basics, part 2                       |
+| Th | Jan 21 | 2016 | 15:10--16:40 | [[file:marking/index.org][Using R in student assessment]]            |
+| Th | Jan 28 | 2016 | 15:30--17:00 | [[file:moodle/index.org][Exploring the Moodle logs]]                |
+|    |        |      |              | [[file:scoring_the_AQ/index.org][EXERCISE: Scoring the AQ]]                 |
+| Th | Feb 04 | 2016 | 15:30--17:00 | [[file:lab_bobo/index.org][Lab conversion: The Bobo doll experiment]] |
+| Th | Feb 25 | 2016 | 15:30--17:00 | [[file:lab_prob/index.org][New lab: Probability distributions]]       |
+| Th | Mar 10 | 2016 | 15:30--17:00 | ** CANCELLED **                          |
+| Tu | Mar 15 | 2016 | 14:10--15:40 | [[file:anova/index.org][Analysis of Variance in R]]                |
+| Th | Apr 14 | 2016 | 13:00--14:30 | [[file:correlation/index.org][Correlation]]                              |
+| Tu | Apr 19 | 2016 | 13:00--14:30 | [[file:functions_iteration/index.org][Functions and Iteration]]                  |
+| Tu | Apr 26 | 2016 | 13:00--14:30 | [[file:byod/index.org][BYOD (Bring Your Own Data)]]               |
+
+* Recommended Links and Readings
+
+- [[file:install/index.org][Installing R]]
+
+** Online tutorials
+
+- [[http://swirlstats.com]]
+- [[http://tryr.codeschool.com]]
+- https://www.datacamp.com/courses/free-introduction-to-r
+
+** Cheat sheets
+
+- [[http://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf][RMarkdown cheat sheet]]
+- [[https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf][RStudio data wrangling cheat sheet]]
+- [[http://www.rstudio.com/wp-content/uploads/2015/12/ggplot2-cheatsheet-2.0.pdf][RStudio ggplot2 cheat sheet]]
+
+** Other
+
+- [[http://adv-r.had.co.nz/Style.html][Style guide for R programming]] (from Hadley Wickham's /Advanced R/)
+- type =browseVignettes("name_of_add_on_package")= in R
+- [[https://twitter.com/search?q=%2523rstats][#rstats on twitter]]
+- [[http://r4ds.had.co.nz/relational-data.html][Grolemund and Wickham on Relational Data]]

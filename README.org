@@ -1,0 +1,10 @@
+#+TITLE: Teaching reproducible data analysis in psychology: Staff training materials
+#+AUTHOR: Dale J. Barr and Philip McAleer
+#+OPTIONS: toc:nil num:nil
+#+DATE: January 2016
+
+* Staff training materials
+
+These materials were created using emacs org-mode version 9.0.9 (emacs version 24.5.1).  The source files all have a =.org= extension, and can be used to compile using the =org-export-dispatch= command.  If you run the elisp code in =publish.el= and choose to publish the project ="org"= from the export dispatcher, it will create all of the html files.
+
+The materials are provided with a CC-BY license.

@@ -1,0 +1,27 @@
+#+title: Lab conversion: The bobo doll experiment
+#+author: Phil McAleer
+#+email: Philip.McAleer@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:nil H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle junk.R
+
+* Background
+
+For this lesson, we're going to convert one of the Level 1 labs from Excel into R.
+
+If you want to see the original lab handout, click [[file:lab_handout.pdf][here (PDF)]].
+
+The materials for this lab are [[file:BoboDoll.zip][here (zip archive).]]

@@ -1,0 +1,69 @@
+---
+title: "Probability Distributions"
+author: "your student id"
+output: pdf_document
+---
+
+# Setup
+
+For this exercise, you will start by generating a set of 52 (virtual) cards using R, and then have your friend guess the cards in order.
+
+We will be using the "dplyr" add-on package for this exercise, so load it in now.
+
+```{r, message = FALSE}
+library("dplyr")
+```
+
+First, define the set of cards, create a shuffled version, and write it to a file called `shuffled.csv`.
+```{r}
+cards <- expand.grid(rank = c("A", 2:10, "J", "K", "Q"),
+                     suit = c("H", "D", "C", "S"))
+
+shuffled <- sample_n(cards, 52) # sample_n is a dplyr function
+
+write.csv(shuffled, "shuffled.csv", row.names = FALSE)
+```
+
+Now open `shuffled.csv` in Excel.  WARNING! Immediately save it as a new file called `guesses.csv`, because `shuffled.csv` will be overwritten each time you compile this report.
+
+You are going to go line by line through the file with your partner, who will try to guess which of the 52 cards you are thinking of.  Your partner is trying hard to read your mind, so think hard about each card, but don't give it away!  Create two new variables in the file: `g_rank` and `g_suit` in your file, in which you will track your partner's guesses of rank and suit.  For instance, if your partner guesses "jack of diamonds", for that particular row, enter "J" under `g_rank` and "D" under `g_suit`.  Make sure you type CAPTIAL letters (e.g., A, J, Q, K and not a, j, q, k) for both the rank and the suit guessed by your partner.
+
+Once you are finished, you are going to read in the file `answers.csv` and use R to score correct guesses.
+
+```{r}
+guesses <- read.csv("guesses.csv", stringsAsFactors = FALSE)
+
+gscores <- mutate(guesses,
+                  correct_rank = rank == g_rank,
+                  correct_suit = suit == g_suit,
+                  correct_card = correct_rank & correct_suit)
+```
+
+The null hypothesis for this experiment is that "mind-reading" does not exist, and your partner is simply guessing.
+
+Write an R statement to calculate the total number of times your partner guessed the correct rank, correct suit, and correct card.
+
+```{r}
+summarise(gscores, 
+          rank = sum(correct_rank),
+          suit = sum(correct_suit),
+          card = sum(correct_card))
+```
+
+Q. Assuming the null hypothesis is true, what is the probability of your partner guessing the correct card?
+
+The probability is 1 out of 52, or approximately `r round(1/52, 4)`.
+
+Q. According to the binomial distribution, what are the chances of your partner guessing exactly many correct cards as he/she did?
+
+The probability is given by 
+
+```{r}
+dbinom(1, 52, 1/52)
+```
+
+
+
+# Note
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.

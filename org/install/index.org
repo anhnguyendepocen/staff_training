@@ -1,0 +1,27 @@
+#+TITLE: Installing R
+#+OPTIONS: toc:nil num:nil
+
+You will need:
+
+- [[http://r-project.org][R]]
+- The [[http://RStudio.com][RStudio]] IDE
+
+*** Windows users
+
+you will also need:
+
+- [[https://cran.r-project.org/bin/windows/Rtools][RTools]], for compiling add-on packages and rendering RMarkdown docs
+- [[http://www.miktex.org/][MiKTeX]], for knitting PDF docs
+
+*** Mac users
+
+thanks to Ben Dunn for the following information:
+
+- [[https://tug.org/mactex/downloading.html][MacTeX]] (download ~2.6GB, but there is a lite version, [[http://ww.tug.org/mactex/morepackages.html][BasicTeX]], which is about ~100MB and should also work fine)
+
+** Add-on packages
+
+You should look into the following add-on packages for R:
+
+=dplyr=, =ggplot2=, =tidyr=, =rmarkdown=
+

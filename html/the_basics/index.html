@@ -1,0 +1,1503 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-03-07 Wed 10:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Getting started with R</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dale Barr" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../index.html"> UP </a>
+ |
+ <a accesskey="H" href="../index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">Getting started with R</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgf1c9322">Why learn R?</a></li>
+<li><a href="#org551c2c5">Introduction</a>
+<ul>
+<li><a href="#org94037b1">What is <code>R</code>?</a></li>
+<li><a href="#org104b8eb">Interacting with <code>R</code></a></li>
+<li><a href="#org543a19e">Warming up: Use R as a calculator</a></li>
+<li><a href="#org5d416e9">Storing results in a variable</a></li>
+<li><a href="#org9fe5712">The workspace</a></li>
+<li><a href="#org87badf3">Vectors and vectorized calculations</a></li>
+<li><a href="#orgfb38ac6">Calling functions</a></li>
+<li><a href="#org3206ed0">Add-on packages</a></li>
+<li><a href="#org7d63b91">Pipes</a></li>
+<li><a href="#org9ade1f0">Getting help</a></li>
+<li><a href="#orgee18370">Data types</a></li>
+</ul>
+</li>
+<li><a href="#orgde5c9bd">Developing an analysis in R</a>
+<ul>
+<li><a href="#orgd865750">Download the data and scripts (.zip file)</a></li>
+<li><a href="#org7c773bc">Maximize reproducibility</a></li>
+<li><a href="#org16e306b">The all-important &ldquo;working directory&rdquo;</a></li>
+<li><a href="#org48520a4">Structure of an R script</a></li>
+<li><a href="#org17e5b17">File Input/Output</a></li>
+<li><a href="#org3a5487f">Reshape wide to long</a></li>
+<li><a href="#orgf89f403">Map to subscales</a></li>
+<li><a href="#org6b46be2">Data summaries</a></li>
+<li><a href="#org4d70353">Final Standalone R Script</a></li>
+<li><a href="#org20d24b1">R Markdown file</a></li>
+</ul>
+</li>
+<li><a href="#orgc9762e1">References</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgf1c9322" class="outline-2">
+<h2 id="orgf1c9322">Why learn R?</h2>
+<div class="outline-text-2" id="text-orgf1c9322">
+<ul class="org-ul">
+<li>A picture says 1000 words (<a href="http://r4stats.com/articles/popularity/">http://r4stats.com/articles/popularity/</a>)</li>
+</ul>
+
+<div class="org-center">
+
+<div class="figure">
+<p><img src="one_graph.png" alt="one_graph.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org551c2c5" class="outline-2">
+<h2 id="org551c2c5">Introduction</h2>
+<div class="outline-text-2" id="text-org551c2c5">
+<ul class="org-ul">
+<li>Download the <a href="script.R">R script</a> for the introduction</li>
+</ul>
+</div>
+
+<div id="outline-container-org94037b1" class="outline-3">
+<h3 id="org94037b1">What is <code>R</code>?</h3>
+<div class="outline-text-3" id="text-org94037b1">
+<div class="org-center">
+
+<div class="figure">
+<p><img src="new_R_logo.png" alt="new_R_logo.png" />
+</p>
+</div>
+
+<p>
+<i>A programming environment for data processing and statistical analysis</i>
+</p>
+</div>
+
+<ul class="org-ul">
+<li>free and open-source</li>
+<li>community supported</li>
+<li>continually evolving</li>
+<li>promotes <i>reproducible research</i></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org104b8eb" class="outline-3">
+<h3 id="org104b8eb">Interacting with <code>R</code></h3>
+<div class="outline-text-3" id="text-org104b8eb">
+</div>
+<ul class="org-ul">
+<li><a id="org104a288"></a>base R (console)<br />
+<div class="outline-text-4" id="text-org104a288">
+<ul class="org-ul">
+<li><a href="http://www.r-project.org/">http://www.r-project.org/</a></li>
+<li><code>REPL</code> (Read-Evaluate-Print-Loop)</li>
+</ul>
+
+<div class="org-center">
+
+<div class="figure">
+<p><img src="repl.png" alt="repl.png" />
+</p>
+</div>
+</div>
+</div>
+</li>
+
+<li><a id="org5e9c04b"></a>RStudio: An Integrated Development Environment (IDE) for R<br />
+<div class="outline-text-4" id="text-org5e9c04b">
+<ul class="org-ul">
+<li><a href="http://www.rstudio.com/">www.rstudio.com</a></li>
+</ul>
+
+<div class="org-center">
+
+<div class="figure">
+<p><img src="rstudio.png" alt="rstudio.png" />
+</p>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+
+<div id="outline-container-org543a19e" class="outline-3">
+<h3 id="org543a19e">Warming up: Use R as a calculator</h3>
+<div class="outline-text-3" id="text-org543a19e">
+<ul class="org-ul">
+<li>be prepared to make lots of typos (at first) :/</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">REPL: Read/Evaluate/Print Loop</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">R prints results back at you</span>
+1 + 1
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 2
+
+</pre>
+
+<ul class="org-ul">
+<li>R remembers the individual lines you typed in the past (your history).  Use arrow keys to scroll through your history</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R">1 + 1 + 3
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 5
+
+</pre>
+
+<ul class="org-ul">
+<li>You can break up math expressions over multiple lines; R waits for a complete expression before processing it.</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">here comes a long expression</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">let's break it over multiple lines</span>
+1 + 2 + 3 + 4 + 5 + 6 +
+    7 + 8 + 9 +
+    10
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 55
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #8b2252;">"Good afternoon"</span>
+</code></pre>
+</div>
+
+<pre class="example">
+[1] "Good afternoon"
+
+</pre>
+
+<ul class="org-ul">
+<li>You can break up text over multiple lines; R waits for a close quote before processing it</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #8b2252;">"There is nothing in the world </span>
+<span style="color: #8b2252;">that makes people so unhappy as fear.  </span>
+<span style="color: #8b2252;">The misfortune that befalls us is </span>
+<span style="color: #8b2252;">seldom, or never, as bad as that </span>
+<span style="color: #8b2252;">which we fear.</span>
+
+<span style="color: #8b2252;">- Friedrich Schiller"</span>
+</code></pre>
+</div>
+
+<pre class="example">
+[1] "There is nothing in the world \nthat makes people so unhappy as fear.  \nThe misfortune that befalls us is \nseldom, or never, as bad as that \nwhich we fear.\n\n- Friedrich Schiller"
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">comments: any text from '#' on is ignored until end of line</span>
+22 / 7  <span style="color: #b22222;"># </span><span style="color: #b22222;">approximation to pi</span>
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 3.142857
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5d416e9" class="outline-3">
+<h3 id="org5d416e9">Storing results in a variable</h3>
+<div class="outline-text-3" id="text-org5d416e9">
+<ul class="org-ul">
+<li>capitalization matters</li>
+<li>don&rsquo;t use spaces or special characters <code>(^&amp;"'*+?)</code> etc.</li>
+<li>use the assignment operator <code>&lt;-</code></li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">use the assignment operator '&lt;-'</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">R stores the number in the variable</span>
+x <span style="color: #008b8b;">&lt;-</span> 5
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">x * 2
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 10
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">R evaluates the expression and stores the result in the variable</span>
+boring_calculation <span style="color: #008b8b;">&lt;-</span> 2 + 2  
+</code></pre>
+</div>
+
+<ul class="org-ul">
+<li>Note that it doesn&rsquo;t print the result back at you when it&rsquo;s stored.  To view the result, just type the variable name on a blank line.</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R">boring_calculation
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 4
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org9fe5712" class="outline-3">
+<h3 id="org9fe5712">The workspace</h3>
+<div class="outline-text-3" id="text-org9fe5712">
+<ul class="org-ul">
+<li>Anytime you assign something to a new variable, R creates a new object in your workspace.  Objects in your workspace exist until you end your session; then they disappear forever (unless you save them).</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ls()
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">rm(<span style="color: #8b2252;">"x"</span>)
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">rm(list = ls()) <span style="color: #b22222;"># </span><span style="color: #b22222;">clear out the workspace</span>
+</code></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org87badf3" class="outline-3">
+<h3 id="org87badf3">Vectors and vectorized calculations</h3>
+<div class="outline-text-3" id="text-org87badf3">
+<ul class="org-ul">
+<li>vector: array of ordered elements</li>
+<li>all of the same <i>data type</i> (numeric, character, factor)</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">put information into a vector using c(...)</span>
+c(1, 2, 3)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 1 2 3
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">c(<span style="color: #8b2252;">"this"</span>, <span style="color: #8b2252;">"is"</span>, <span style="color: #8b2252;">"cool"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] "this" "is"   "cool"
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">what happens when you mix types?</span>
+c(2, <span style="color: #8b2252;">"good"</span>, 2, <span style="color: #8b2252;">"b"</span>, <span style="color: #8b2252;">"true"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] "2"    "good" "2"    "b"    "true"
+
+</pre>
+</div>
+
+<ul class="org-ul">
+<li><a id="orgba4e54a"></a>Calculating \(z\)-scores<br />
+<div class="outline-text-4" id="text-orgba4e54a">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">example IQ scores: mu = 100, sigma = 15</span>
+iq <span style="color: #008b8b;">&lt;-</span> c(86, 101, 127, 99)
+
+iq - 100
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -14   1  27  -1
+
+</pre>
+
+<div class="org-center">
+<p>
+\(z = \frac{X - \mu}{\sigma}\)
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">z-scores</span>
+(iq - 100) / 15
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -0.93333333  0.06666667  1.80000000 -0.06666667
+
+</pre>
+</div>
+</li>
+</ul>
+</div>
+
+<div id="outline-container-orgfb38ac6" class="outline-3">
+<h3 id="orgfb38ac6">Calling functions</h3>
+<div class="outline-text-3" id="text-orgfb38ac6">
+<div class="org-src-container">
+<pre><code class="src src-R">iq_z <span style="color: #008b8b;">&lt;-</span> (iq - 100) / 15
+
+sort(iq_z)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -0.93333333 -0.06666667  0.06666667  1.80000000
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">round(iq_z, 2)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -0.93  0.07  1.80 -0.07
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">round(sort(iq_z), 2)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -0.93 -0.07  0.07  1.80
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3206ed0" class="outline-3">
+<h3 id="org3206ed0">Add-on packages</h3>
+<div class="outline-text-3" id="text-org3206ed0">
+</div>
+<ul class="org-ul">
+<li><a id="org4f54e5f"></a>Installing<br />
+<div class="outline-text-4" id="text-org4f54e5f">
+<ul class="org-ul">
+<li>The <a href="https://cran.r-project.org/">Comprehensive R Archive Network (CRAN)</a> hosts the official repository of R add-on packages
+<ul class="org-ul">
+<li>these are installed using the function <code>install.packages("package_name")</code> in base R</li>
+</ul></li>
+<li>There are many unofficial packages hosted at github, which can be installed using <code>install_github()</code> from the add-on package <code>devtools</code>.</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R">install.packages(<span style="color: #8b2252;">"fortunes"</span>)
+devtools::install_github(<span style="color: #8b2252;">"sckott/cowsay"</span>)
+</code></pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgd6979f5"></a>Accessing the functionality of add-on packages<br />
+<div class="outline-text-4" id="text-orgd6979f5">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">access functionality, including pipes</span>
+</code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+
+
+<div id="outline-container-org7d63b91" class="outline-3">
+<h3 id="org7d63b91">Pipes</h3>
+<div class="outline-text-3" id="text-org7d63b91">
+<p>
+Calls to functions can be serialized (put in sequence) using the <code>%&gt;%</code> operator.  This is a syntactic innovation introduced to R by Stephan Milton Bache in 2014.  The <code>%&gt;%</code> lives in the package <code>magrittr</code>, and also is exported through the add-on package <code>dplyr</code> by Hadley Wickham.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">replaces:</span>
+<span style="color: #b22222;">##   </span><span style="color: #b22222;">round(sort(iq_z), 2)</span>
+iq_z <span style="color: #008b8b;">%&gt;%</span> sort() <span style="color: #008b8b;">%&gt;%</span> round(2)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] -0.93 -0.07  0.07  1.80
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org9ade1f0" class="outline-3">
+<h3 id="org9ade1f0">Getting help</h3>
+<div class="outline-text-3" id="text-org9ade1f0">
+<ul class="org-ul">
+<li>How &ldquo;extreme&rdquo; are these IQ scores?  We want to use the <code>pnorm()</code> function from base R.</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">help(topic, package)</span>
+help(<span style="color: #8b2252;">"pnorm"</span>) <span style="color: #b22222;">## </span><span style="color: #b22222;">help page</span>
+?pnorm 
+
+example(<span style="color: #8b2252;">"pnorm"</span>) <span style="color: #b22222;">## </span><span style="color: #b22222;">show examples (careful!)</span>
+</code></pre>
+</div>
+
+<pre class="example">
+Normal                  package:stats                  R Documentation
+
+The Normal Distribution
+
+Description:
+
+     Density, distribution function, quantile function and random
+     generation for the normal distribution with mean equal to ‘mean’
+     and standard deviation equal to ‘sd’.
+
+Usage:
+
+     dnorm(x, mean = 0, sd = 1, log = FALSE)
+     pnorm(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+     qnorm(p, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE)
+     rnorm(n, mean = 0, sd = 1)
+     
+Arguments:
+
+    x, q: vector of quantiles.
+
+       p: vector of probabilities.
+
+       n: number of observations. If ‘length(n) &gt; 1’, the length is
+          taken to be the number required.
+
+    mean: vector of means.
+
+      sd: vector of standard deviations.
+
+log, log.p: logical; if TRUE, probabilities p are given as log(p).
+
+lower.tail: logical; if TRUE (default), probabilities are P[X &lt;= x]
+          otherwise, P[X &gt; x].
+
+Details:
+
+     If ‘mean’ or ‘sd’ are not specified they assume the default values
+     of ‘0’ and ‘1’, respectively.
+
+     The normal distribution has density
+
+            f(x) = 1/(sqrt(2 pi) sigma) e^-((x - mu)^2/(2 sigma^2))     
+     
+     where mu is the mean of the distribution and sigma the standard
+     deviation.
+
+Value:
+
+     ‘dnorm’ gives the density, ‘pnorm’ gives the distribution
+     function, ‘qnorm’ gives the quantile function, and ‘rnorm’
+     generates random deviates.
+
+     The length of the result is determined by ‘n’ for ‘rnorm’, and is
+     the maximum of the lengths of the numerical arguments for the
+     other functions.
+
+     The numerical arguments other than ‘n’ are recycled to the length
+     of the result.  Only the first elements of the logical arguments
+     are used.
+
+     For ‘sd = 0’ this gives the limit as ‘sd’ decreases to 0, a point
+     mass at ‘mu’.  ‘sd &lt; 0’ is an error and returns ‘NaN’.
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">what percentile (against the standard normal dist)</span>
+pnorm(iq_z)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">what percentile, calculated from raw scores</span>
+pnorm(iq, mean = 100, sd = 15)
+</code></pre>
+</div>
+
+<pre class="example">
+[1] 0.1753239 0.5265765 0.9640697 0.4734235
+[1] 0.1753239 0.5265765 0.9640697 0.4734235
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgee18370" class="outline-3">
+<h3 id="orgee18370">Data types</h3>
+<div class="outline-text-3" id="text-orgee18370">
+<ul class="org-ul">
+<li>other data types include:</li>
+</ul>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><code>matrix</code></td>
+<td class="org-left">two dimensions</td>
+<td class="org-left">all data must be of same type</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>array</code></td>
+<td class="org-left">two or more dimensions</td>
+<td class="org-left">all data must be of same type</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="org-ul">
+<li>also</li>
+</ul>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><code>list</code></td>
+<td class="org-left">like a vector, but elements can be different types</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>data.frame</code></td>
+<td class="org-left">tabular data, most common for statistical analysis</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<ul class="org-ul">
+<li><a id="orgb59c608"></a>Data frames<br />
+<div class="outline-text-4" id="text-orgb59c608">
+<ul class="org-ul">
+<li>The <code>data.frame</code> data type allows us to represent tabular data, like the type of data you find in a spreadsheet.</li>
+</ul>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">subject</th>
+<th scope="col" class="org-right">IQ</th>
+<th scope="col" class="org-right">z_score</th>
+<th scope="col" class="org-right">percentile</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">DB</td>
+<td class="org-right">86</td>
+<td class="org-right">-0.93</td>
+<td class="org-right">18</td>
+</tr>
+
+<tr>
+<td class="org-left">FF</td>
+<td class="org-right">101</td>
+<td class="org-right">0.07</td>
+<td class="org-right">53</td>
+</tr>
+
+<tr>
+<td class="org-left">LQ</td>
+<td class="org-right">127</td>
+<td class="org-right">1.8</td>
+<td class="org-right">96</td>
+</tr>
+
+<tr>
+<td class="org-left">MJ</td>
+<td class="org-right">99</td>
+<td class="org-right">-0.07</td>
+<td class="org-right">47</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="org-ul">
+<li>to create the above table:</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R">dat <span style="color: #008b8b;">&lt;-</span> data.frame(subject = c(<span style="color: #8b2252;">"DB"</span>, <span style="color: #8b2252;">"FF"</span>, <span style="color: #8b2252;">"LQ"</span>, <span style="color: #8b2252;">"MJ"</span>),
+           IQ = iq,
+           z_score = iq_z,
+           percentile = pnorm(iq_z) * 100)
+
+dat
+</code></pre>
+</div>
+
+<pre class="example">
+  subject  IQ     z_score percentile
+1      DB  86 -0.93333333   17.53239
+2      FF 101  0.06666667   52.65765
+3      LQ 127  1.80000000   96.40697
+4      MJ  99 -0.06666667   47.34235
+
+</pre>
+</div>
+</li>
+
+<li><a id="org05d5e0e"></a>Referencing values in a data.frame<br />
+<div class="outline-text-4" id="text-org05d5e0e">
+<ul class="org-ul">
+<li>referencing a column</li>
+</ul>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">all of these methods are equivalent</span>
+dat$IQ
+dat[[<span style="color: #8b2252;">"IQ"</span>]]
+dat[[2]]
+
+dat[, <span style="color: #8b2252;">"IQ"</span>]
+dat[, 2]
+</code></pre>
+</div>
+
+<pre class="example">
+[1]  86 101 127  99
+[1]  86 101 127  99
+[1]  86 101 127  99
+[1]  86 101 127  99
+[1]  86 101 127  99
+
+</pre>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgde5c9bd" class="outline-2">
+<h2 id="orgde5c9bd">Developing an analysis in R</h2>
+<div class="outline-text-2" id="text-orgde5c9bd">
+<p>
+For this second part of the training, we are going to analyse data from the STARS Statistics Anxiety Survey, which was administered to students every year over a three-year span (thanks to Maxine Swingler for the data from years 1 and 2).  All the responses have been anonymised; in other words, by associating the responses for each student with an arbitrary ID number.
+</p>
+
+<p>
+The STARS survey (Cruise, Cash, &amp; Bolton, 1985) is a 51-item questionnaire, with each response on a 1 to 5 scale, with higher numbers indicating greater anxiety.
+</p>
+
+
+<div class="figure">
+<p><img src="stars_survey.png" alt="stars_survey.png" />
+</p>
+</div>
+
+<p>
+STARS has five subscales:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">org_babel_R_eoe</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+We have the data for the three years in <i>wide format</i>.  In other words, it looks like this:
+</p>
+
+
+<div class="figure">
+<p><img src="wide.png" alt="wide.png" />
+</p>
+</div>
+
+<p>
+Our tasks are:
+</p>
+
+<ol class="org-ol">
+<li>reshape the data so that we can match responses to subscales;</li>
+<li>match responses to subscales;</li>
+<li>calculate means for each subscale for each respondent;</li>
+<li>visualize the results using the add-on package <code>ggplot2</code>;</li>
+<li>plug the code into an RMarkdown document to create a dynamic report.</li>
+</ol>
+</div>
+
+<div id="outline-container-orgd865750" class="outline-3">
+<h3 id="orgd865750">Download the data and scripts (.zip file)</h3>
+<div class="outline-text-3" id="text-orgd865750">
+<p>
+<a href="stars.zip">GU STARS (Statistics Anxiety Survey) data</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7c773bc" class="outline-3">
+<h3 id="org7c773bc">Maximize reproducibility</h3>
+<div class="outline-text-3" id="text-org7c773bc">
+<ul class="org-ul">
+<li>don&rsquo;t save your workspace image on exit and don&rsquo;t load it on startup</li>
+</ul>
+
+<div class="org-center">
+
+<div class="figure">
+<p><img src="repro.png" alt="repro.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org16e306b" class="outline-3">
+<h3 id="org16e306b">The all-important &ldquo;working directory&rdquo;</h3>
+<div class="outline-text-3" id="text-org16e306b">
+<ul class="org-ul">
+<li>You can set your working directory from within the console using
+<code>setwd()</code>, or you can do access a file picker from the drop-down
+menu: <code>Session | Set Working Directory | Choose Directory...</code>.  (The
+file picker will generate the appropriate <code>setwd()</code> command in your
+console.)</li>
+<li><b>NEVER</b> use <code>setwd()</code> within a script.  Your directory structure is
+unique, and may be different when you access these files in the
+future (say, on a different computer).  Don&rsquo;t. Do. It.</li>
+<li>The script you are writing should &ldquo;live&rdquo; inside the working
+directory, so that it subdirectories can be accessed in your script
+using relative instead of absolute path.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org48520a4" class="outline-3">
+<h3 id="org48520a4">Structure of an R script</h3>
+<div class="outline-text-3" id="text-org48520a4">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">comment here should say something about this script</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">- who made it, what's it for</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">- any particular version requirements?</span>
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">add-on packages</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">data processing</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"tidyr"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">tidying</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"ggplot2"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">plotting</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"lme4"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">mixed-effects analysis</span>
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">any functions that I have defined</span>
+<span style="color: #0000ff;">my_func</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>(a, b, c) (a + b) / c
+<span style="color: #0000ff;">cats_are_cool</span> <span style="color: #008b8b;">&lt;-</span> <span style="color: #a020f0;">function</span>() cat(<span style="color: #8b2252;">"cats are cool\n"</span>)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">read in data you will be using</span>
+dat <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"my_data.csv"</span>)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">the code</span>
+my_func(1, 3, 2)
+<span style="color: #b22222;">## </span><span style="color: #b22222;">.. etc.  </span>
+</code></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org17e5b17" class="outline-3">
+<h3 id="org17e5b17">File Input/Output</h3>
+<div class="outline-text-3" id="text-org17e5b17">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>)   <span style="color: #b22222;"># </span><span style="color: #b22222;">data processing</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"tidyr"</span>)   <span style="color: #b22222;"># </span><span style="color: #b22222;">data reshaping</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"ggplot2"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">plotting</span>
+
+scales <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"subscales.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'subscales.csv': No such file or directory
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(scales)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(scales) : object 'scales' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">stars_wide <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"stars.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in file(file, "rt") : cannot open the connection
+In addition: Warning message:
+In file(file, "rt") :
+  cannot open file 'stars.csv': No such file or directory
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(stars_wide)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(stars_wide) : object 'stars_wide' not found
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org3a5487f" class="outline-3">
+<h3 id="org3a5487f">Reshape wide to long</h3>
+<div class="outline-text-3" id="text-org3a5487f">
+<div class="org-src-container">
+<pre><code class="src src-R">stars <span style="color: #008b8b;">&lt;-</span> stars_wide <span style="color: #008b8b;">%&gt;%</span> gather(item_id, score, I01:I51)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'stars_wide' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(stars)
+</code></pre>
+</div>
+
+<pre class="example">
+function (x, full = TRUE, scale = TRUE, radius = TRUE, labels = dimnames(x)[[1L]], 
+    locations = NULL, nrow = NULL, ncol = NULL, len = 1, key.loc = NULL, 
+    key.labels = dimnames(x)[[2L]], key.xpd = TRUE, xlim = NULL, ylim = NULL, 
+    flip.labels = NULL, draw.segments = FALSE, col.segments = 1L:n.seg, 
+    col.stars = NA, col.lines = NA, axes = FALSE, frame.plot = axes, main = NULL, 
+    sub = NULL, xlab = "", ylab = "", cex = 0.8, lwd = 0.25, lty = par("lty"), 
+    xpd = FALSE, mar = pmin(par("mar"), 1.1 + c(2 * axes + (xlab != ""), 
+        2 * axes + (ylab != ""), 1, 0)), add = FALSE, plot = TRUE, ...)
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orgf89f403" class="outline-3">
+<h3 id="orgf89f403">Map to subscales</h3>
+<div class="outline-text-3" id="text-orgf89f403">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">map each item to each of the 5 subscales</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I3  --&gt; Ask_For_Help</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I2  --&gt; Interpretation</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I25 --&gt; Self-Concept</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I30 --&gt; Teacher</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I1  --&gt; Test</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">I24 --&gt; Worth</span>
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">stars_sub <span style="color: #008b8b;">&lt;-</span> inner_join(scales, stars, <span style="color: #8b2252;">"item_id"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in inner_join(scales, stars, "item_id") : object 'scales' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(stars_sub)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(stars_sub) : object 'stars_sub' not found
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org6b46be2" class="outline-3">
+<h3 id="org6b46be2">Data summaries</h3>
+<div class="outline-text-3" id="text-org6b46be2">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">calculate subscale means per student_id and year</span>
+stars_means <span style="color: #008b8b;">&lt;-</span> stars_sub <span style="color: #008b8b;">%&gt;%</span>
+   group_by(student_id, year, subscale) <span style="color: #008b8b;">%&gt;%</span>
+   summarise(mscore = mean(score))
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'stars_sub' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(stars_means)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(stars_means) : object 'stars_means' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore)) + geom_point()
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_1.png" alt="plot_1.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_2.png" alt="plot_2.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = <span style="color: #8b2252;">'median'</span>, geom = <span style="color: #8b2252;">"point"</span>, size = 5)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_3.png" alt="plot_3.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = <span style="color: #8b2252;">'median'</span>, geom = <span style="color: #8b2252;">"point"</span>, size = 5) +
+    coord_flip()
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_4.png" alt="plot_4.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = <span style="color: #8b2252;">'median'</span>, geom = <span style="color: #8b2252;">"point"</span>, size = 5) +
+    coord_flip() + 
+    facet_wrap(~year)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_5.png" alt="plot_5.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = <span style="color: #8b2252;">'median'</span>, geom = <span style="color: #8b2252;">"point"</span>, size = 5) +
+    coord_flip() + 
+    facet_wrap(~year) +
+    guides(color = <span style="color: #228b22;">FALSE</span>, fill = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="plot_6.png" alt="plot_6.png" />
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org4d70353" class="outline-3">
+<h3 id="org4d70353">Final Standalone R Script</h3>
+<div class="outline-text-3" id="text-org4d70353">
+<p>
+<a href="stars/stars_analysis.R">Click here to download</a>
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>)   <span style="color: #b22222;"># </span><span style="color: #b22222;">data processing</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"tidyr"</span>)   <span style="color: #b22222;"># </span><span style="color: #b22222;">data reshaping</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"ggplot2"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">plotting</span>
+
+scales <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"subscales.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+
+stars_wide <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"stars.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+
+stars <span style="color: #008b8b;">&lt;-</span> stars_wide <span style="color: #008b8b;">%&gt;%</span> gather(item_id, score, I01:I51)
+
+stars_sub <span style="color: #008b8b;">&lt;-</span> inner_join(scales, stars, <span style="color: #8b2252;">"item_id"</span>)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">calculate subscale means per student_id and year</span>
+stars_means <span style="color: #008b8b;">&lt;-</span> stars_sub <span style="color: #008b8b;">%&gt;%</span>
+   group_by(student_id, year, subscale) <span style="color: #008b8b;">%&gt;%</span>
+   summarise(mscore = mean(score))
+
+ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = <span style="color: #8b2252;">'median'</span>, geom = <span style="color: #8b2252;">"point"</span>, size = 5) +
+    coord_flip() + 
+    facet_wrap(~year) +
+    guides(color = <span style="color: #228b22;">FALSE</span>, fill = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org20d24b1" class="outline-3">
+<h3 id="org20d24b1">R Markdown file</h3>
+<div class="outline-text-3" id="text-org20d24b1">
+<p>
+<a href="stars/stars_analysis.Rmd">Click here to download</a>
+</p>
+
+<pre class="example">
+---
+title: "Report on Stats Anxiety"
+author: "Dale"
+date: "December 8, 2015"
+output: pdf_document
+bibliography: stars.bib
+csl: apa.csl
+---
+
+We used the following add-on packages to perform the analyses and create the graphics.
+
+```{r message=FALSE}
+library("dplyr")   # data processing
+library("tidyr")   # data reshaping
+library("ggplot2") # plotting
+```
+
+Students from years 1, 2, and 3 were given the STARS statistical anxiety rating scale by @cruise_et_al_1985.
+
+```{r, echo=FALSE, warning=FALSE}
+scales &lt;- read.csv("subscales.csv", stringsAsFactors = FALSE)
+
+stars_wide &lt;- read.csv("stars.csv", stringsAsFactors = FALSE)
+
+stars &lt;- stars_wide %&gt;% gather(item_id, score, I01:I51)
+
+stars_sub &lt;- inner_join(scales, stars, "item_id")
+
+## calculate subscale means per student_id and year
+stars_means &lt;- stars_sub %&gt;%
+   group_by(student_id, year, subscale) %&gt;%
+   summarise(mscore = mean(score))
+```
+
+Descriptive statistics for the subscales are below:
+
+```{r, echo = FALSE, results = 'asis'}
+dstats &lt;- stars_means %&gt;%
+  group_by(subscale) %&gt;%
+  summarise(m = mean(mscore, na.rm = TRUE),
+            med = median(mscore, na.rm = TRUE),
+            sdev = sd(mscore, na.rm = TRUE))
+knitr::kable(dstats)
+```
+
+```{r, echo = FALSE}
+max_anx &lt;- max(dstats$m)
+highest &lt;- dstats$subscale[dstats$m == max_anx]
+```
+
+Students exhibited greatest anxiety on the `r highest` subscale, with a mean anxiety rating of `r round(max_anx, 2)`.
+
+# Plot
+
+Here is a plot of the results by year:
+
+```{r, echo = FALSE, warning = FALSE}
+ggplot(stars_means, aes(subscale, mscore, color = subscale)) +
+    geom_jitter(alpha = .7) +
+    geom_violin(aes(fill = subscale), alpha = .2) +
+    stat_summary(fun.y = 'median', geom = "point", size = 5) +
+    coord_flip() + 
+    facet_wrap(~year) +
+    guides(color = FALSE, fill = FALSE)
+```
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc9762e1" class="outline-2">
+<h2 id="orgc9762e1">References</h2>
+<div class="outline-text-2" id="text-orgc9762e1">
+<p>
+Cruise, R. J., Cash, R. W., &amp; Bolton, D. L. (1985). Development and validation of an instrument to measure
+statistical anxiety. <i>Proceedings of the American Statistical Association, Section on Statistical Education, Las Vegas, NV.</i>
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: R Training Nov 30 2015</p>
+<p class="author">Author: Dale Barr</p>
+<p class="date">Created: 2018-03-07 Wed 10:34</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

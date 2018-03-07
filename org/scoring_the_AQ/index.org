@@ -1,0 +1,43 @@
+#+title: Exercise: Scoring the AQ questionnaire
+#+author: Dale Barr
+#+email: dale.barr@glasgow.ac.uk
+#+date: R Training 
+#+OPTIONS: toc:nil H:2 ^:nil num:nil
+#+LATEX_CLASS: article
+#+LATEX_CLASS_OPTIONS: []
+#+LATEX_HEADER: \makeatletter \def\verbatim{\scriptsize\@verbatim \frenchspacing\@vobeyspaces \@xverbatim} \makeatother
+#+LATEX_HEADER: \definecolor{lgray}{rgb}{0.90,0.90,0.90}
+#+LATEX_HEADER: \usepackage[T1]{fontenc}
+#+LATEX_HEADER: \usepackage{helvet}
+#+LATEX_HEADER: \usepackage{inconsolata}
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usemintedstyle{tango}
+#+LATEX_HEADER: \usepackage{fullpage}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+#+HTML_LINK_HOME: ../index.html
+#+HTML_LINK_UP: ../index.html
+#+PROPERTY: header-args:R :session *R2* :exports both :results output :tangle junk.R
+
+Here's a chance to test your data analysis skills in R.
+
+For a research project, we had prospective participants complete the short 10-item version of the Autism-Spectrum Quotient (AQ) (Baron-Cohen, Wheelwright, Skinner, Martin, & Clubley, 2001), which is designed to measure autistic traits in adults.  We used [[http://www.surveymonkey.com][Survey Monkey]] to host the survey.  The data from Survey Monkey was downloaded as a .csv file, and has been minimally processed to preserve participant anonymity.  
+
+#+CAPTION: The ten items on the AQ-10.
+| Q1  | I often notice small sounds when others do not.                                               |
+| Q2  | I usually concentrate more on the whole picture, rather than small details.                   |
+| Q3  | I find it easy to do more than one thing at once.                                             |
+| Q4  | If there is an interruption, I can switch back to what I was doing very quickly.              |
+| Q5  | I find it easy to read between the lines when someone is talking to me.                       |
+| Q6  | I know how to tell if someone listening to me is getting bored.                               |
+| Q7  | When I'm reading a story, I find it difficult to work out the characters' intentions.         |
+| Q8  | I like to collect information about categories of things.                                     |
+| Q9  | I find it easy to work out what someone is thinking or feeling just by looking at their face. |
+| Q10 | I find it difficult to work out people's intentions.                                          |
+
+Responses to each item were measured on a four-point scale: Definitely Disagree, Slightly Disagree, Slightly Agree, Definitely Agree.  To avoid response bias, each question is scored according to one of two different formats.  For questions 1, 7, 8, and 10, a point is assigned for agreement (either "Slightly Agree" or "Definitely Agree"), zero otherwise.  For the remaining questions, a point is assigned for disagreement ("Slightly Disagree" or "Definitely Disagree"), zero otherwise.  The AQ for each participant is just the total points across all 10 questions.
+
+Your task is to develop an R script to calculate the AQ score for the (anonymized) responses in  [[file:sm_data.csv][this data file]].  The script should be written in a general manner so that if you were to add more participants through Survey Monkey, re-download the csv file, and run the script on it, it would run without error.
+
+After calculating the AQ scores for each participant, plot a distribution of the scores using =ggplot2=.
+
+As a hint, your solution will involve reshaping using a =tidyr= function and joining tables using one of the two-table verbs in =dplyr=.  An example answer will be made available next week.

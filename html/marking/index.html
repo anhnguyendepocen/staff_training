@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-03-07 Wed 10:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Using R in Student Assessment</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dale Barr" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../index.html"> UP </a>
+ |
+ <a accesskey="H" href="../index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">Using R in Student Assessment</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgc94daa6">Introduction</a>
+<ul>
+<li><a href="#orgcea2d66">Why I chose these data</a></li>
+</ul>
+</li>
+<li><a href="#orgbf88cd1">Calculating grades</a>
+<ul>
+<li><a href="#org15d3326">Our tasks</a></li>
+<li><a href="#orgc8338e8">The data archive</a></li>
+<li><a href="#orgb432a35">Loading it</a></li>
+<li><a href="#orgb55ac89">Calculating homework grades</a></li>
+<li><a href="#orgf41aa92">Reshaping the homework table</a></li>
+<li><a href="#org5a32f3c">Combining homework and exam scores</a></li>
+<li><a href="#orgcf900aa">Extra practice to do on your own</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgc94daa6" class="outline-2">
+<h2 id="orgc94daa6">Introduction</h2>
+<div class="outline-text-2" id="text-orgc94daa6">
+<p>
+In this lesson, we will apply some of what you learned in <a href="http://talklab.psy.gla.ac.uk/r_training/the_basics/index.html">&ldquo;the basics (part 1 and 2)&rdquo;</a> to analyze assessments for an undergraduate course in statistics.
+</p>
+
+<p>
+Make sure you have the following add-on packages installed: <code>dplyr</code>, <code>tidyr</code>, <code>ggplot2</code>.
+</p>
+
+<p>
+Topics we will be covering:
+</p>
+
+<ul class="org-ul">
+<li>data input/output</li>
+<li>reshaping data</li>
+<li>relational data, including different types of joins</li>
+<li>data summaries</li>
+<li>visualization using <code>ggplot2</code></li>
+</ul>
+
+<p>
+Background reading:
+</p>
+
+<ul class="org-ul">
+<li><a href="http://r4ds.had.co.nz/relational-data.html">Grolemund and Wickham, &ldquo;Relational Data&rdquo;, in R for Data Science</a></li>
+<li><a href="http://vita.had.co.nz/papers/tidy-data.html">Wickham&rsquo;s &ldquo;Tidy Data&rdquo;</a></li>
+</ul>
+
+<p>
+<b>NOTE: The full script containing all reproducible code can be downloaded <a href="http://talklab.psy.gla.ac.uk/r_training/marking/script.R">here</a></b>
+</p>
+</div>
+
+<div id="outline-container-orgcea2d66" class="outline-3">
+<h3 id="orgcea2d66">Why I chose these data</h3>
+<div class="outline-text-3" id="text-orgcea2d66">
+<p>
+Data analytic skills are best learned by analyzing one&rsquo;s own data.  Marking assignments, combining scores into final assessments, and evaluating participation in a course are all activities with which staff routinely perform, and staff have access to a variety of data related to their own teaching activities.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbf88cd1" class="outline-2">
+<h2 id="orgbf88cd1">Calculating grades</h2>
+<div class="outline-text-2" id="text-orgbf88cd1">
+<p>
+We often think of analyzing data in terms of generating graphs and computing statistics, but in reality, this is a fairly small part of what counts as data analysis.  When dealing with large datasets you will probably spend a proportionally larger amount of time just <i>preparing</i> the data than you will spend visualizing it or computing statistics.  
+</p>
+
+<p>
+Most people have some kind of idiosyncratic and ad-hoc system in place for data preparation; however, these systems are often error-prone, inefficient, and not reproducible.  It pays to learn how to do things in a more systematic way: it will make you a much more efficient and confident data analyst.
+</p>
+
+<p>
+In this lesson, we will be working with anonymized grades from my undergraduate statistics course at the University of Glasgow.
+</p>
+</div>
+
+<div id="outline-container-org15d3326" class="outline-3">
+<h3 id="org15d3326">Our tasks</h3>
+<div class="outline-text-3" id="text-org15d3326">
+<ol class="org-ol">
+<li>Grading
+<ul class="org-ul">
+<li>Homework: Students were given 8 homework assignments.  The policy
+for calculating their final homework grade was to drop the lowest
+score, then take the average of the remaining scores.</li>
+<li>Final grade: The single overall homework score should be combined
+with the exam score, with the weightings of 60%&nbsp;Exam,
+40%&nbsp;Homework.</li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgc8338e8" class="outline-3">
+<h3 id="orgc8338e8">The data archive</h3>
+<div class="outline-text-3" id="text-orgc8338e8">
+<p>
+Download the file <a href="marking_data.zip">marking_data.zip</a> and unzip it somewhere where you can find it.  Then, make sure you set your working directory to the marking_data folder.  If you&rsquo;ve forgotten how to do this, see <a href="http://talklab.psy.gla.ac.uk/r_training/the_basics/index.html#orgheadline24">here</a>.
+</p>
+
+<p>
+You can check if everything worked correctly by typing <code>list.files()</code> in your console window.  You should see as a result:
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">list.files()
+</code></pre>
+</div>
+
+<pre class="example">
+character(0)
+
+</pre>
+
+<p>
+Here is a description of the files.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><code>exam.csv</code></td>
+<td class="org-left">Assessment scores on homework (40%) and exam (60%)</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>homework.csv</code></td>
+<td class="org-left">Assessment scores on all 8 homework assignments</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>scale.csv</code></td>
+<td class="org-left">Marking scale translating letter mark to 1-22 point scale</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>users.csv</code></td>
+<td class="org-left">(anonymized) list of all students; names, IDs are fake</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-orgb432a35" class="outline-3">
+<h3 id="orgb432a35">Loading it</h3>
+<div class="outline-text-3" id="text-orgb432a35">
+<ul class="org-ul">
+<li>We will be working with the <code>read.csv()</code> function to read in the data from these files.  For better performance, including not having to constantly remember to set <code>stringsAsFactors = FALSE</code>, check out the <code>readr</code> package, which contains the alternative function <code>read_csv()</code> (note the underscore instead of the dot between <code>read</code> and <code>csv</code>).</li>
+</ul>
+
+<p>
+First, lets look at the list of users.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">users <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"users.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(users)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(users) : object 'users' not found
+
+</pre>
+
+<p>
+Two mysteries.
+</p>
+
+<p>
+First, there are far more users (433) than there were students enrolled in this class (130); the students in the class are a subset of all of the users in this table.  For whatever reason, it was not possible to download only the subset of users enrolled in the course, so we&rsquo;ll have to deal with the superset.  This turns out not to be a big problem because of the way we&rsquo;ll be joining the tables together, so we&rsquo;ll leave it for now.
+</p>
+
+<p>
+Second, some of the the student ID numbers (in the field <code>ID.number</code>) are weird.  Student IDs are 7 digit numbers, sometimes with leading zeroes (&ldquo;0012345&rdquo; is a valid student ID number).  Annoyingly, <code>read.csv()</code> has guessed that <code>ID.number</code> should be stored as an integer, which causes the leading zeroes to be dropped.  How can we overrule this behavior?  If you look at the documentation for <code>read.csv()</code> (type <code>?read.csv()</code>), you will see an argument <code>colClasses</code>.  We will use this argument to force R to load in the ID number as a character.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb55ac89" class="outline-3">
+<h3 id="orgb55ac89">Calculating homework grades</h3>
+<div class="outline-text-3" id="text-orgb55ac89">
+<div class="org-src-container">
+<pre><code class="src src-R">hwk <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"homework.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>,
+                colClasses = c(<span style="color: #8b2252;">"character"</span>, <span style="color: #8b2252;">"integer"</span>,
+                               <span style="color: #8b2252;">"character"</span>, <span style="color: #8b2252;">"integer"</span>))
+</code></pre>
+</div>
+
+<p>
+Now glimpse it:
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(hwk)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(hwk) : object 'hwk' not found
+
+</pre>
+
+<p>
+Our task is to calculate a single composite homework grade by dropping each student&rsquo;s lowest score and then calculating a mean.  This would be laborious to do by hand, as there are 130 students in the class, not to mention error-prone.  So the first thing we&rsquo;ll do is write a script that does that for us.  We can break the task into the following steps:
+</p>
+
+<ol class="org-ol">
+<li>Create a table with each student&rsquo;s top 7 grades</li>
+<li>Calculate mean grades by subject</li>
+</ol>
+
+<p>
+Before we do this, let&rsquo;s just check the integrity of our data: let&rsquo;s make sure we have 8 scores for each of our 130 students.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">first, let's make sure we have all 8 scores for all students</span>
+hcounts <span style="color: #008b8b;">&lt;-</span> hwk <span style="color: #008b8b;">%&gt;%</span> count(SID)
+head(hcounts)
+
+hcounts <span style="color: #008b8b;">%&gt;%</span> select(n) <span style="color: #008b8b;">%&gt;%</span> distinct()
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'hwk' not found
+Error in head(hcounts) : object 'hcounts' not found
+Error in eval(lhs, parent, parent) : object 'hcounts' not found
+
+</pre>
+
+<p>
+OK, we&rsquo;re satisfied that we have a full set of scores for students.  Now let&rsquo;s do step 1: find the top 7 grades for each student.  We will use the <code>group_by()</code> and <code>slice()</code> functions from the R package <code>dplyr</code>.
+</p>
+
+<p>
+We&rsquo;re going to do something slightly more complicated that we&rsquo;ve done in the past; in particular, we are going to use the <code>windowed</code> functionality of <code>dplyr</code>.  (For background, see the <code>dplyr</code> vignette &rsquo;introduction&rsquo;, particularly the section on &ldquo;Grouped operations&rdquo;.)  What does this mean?  
+</p>
+
+<p>
+Well, normally when you use an function such as <code>mean()</code> or <code>arrange()</code>, it performs the operation (e.g., calculate a summary statistic, re-arrange the rows) over the entire table.  For instance, <code>summarize(hwk, lowest = min(points))</code> will give us the lowest value of points over all 1048 observations in the table.
+</p>
+
+<p>
+But what we want is the top 7 scores for <b>each student</b>, so what we need to do is to apply <code>arrange()</code> to each student&rsquo;s data individually, and then we will <code>slice()</code> off the top 7.  This is called a &ldquo;windowed&rdquo; operation because each student&rsquo;s data is an individual &ldquo;window&rdquo; over which the <code>arrange()</code> operation is applied.  Let&rsquo;s try out <code>slice()</code>, <code>arrange()</code> and <code>group_by()</code> to get a feeling for them before we try to use them together.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">unwindowed versions</span>
+slice(hwk, 1:10) <span style="color: #b22222;"># </span><span style="color: #b22222;">first 10 rows</span>
+hwk <span style="color: #008b8b;">%&gt;%</span> arrange(points) <span style="color: #b22222;">## </span><span style="color: #b22222;">ascending order</span>
+hwk <span style="color: #008b8b;">%&gt;%</span> arrange(desc(points))
+
+hwk <span style="color: #008b8b;">%&gt;%</span> arrange(points) <span style="color: #008b8b;">%&gt;%</span> slice(1:10) <span style="color: #b22222;">## </span><span style="color: #b22222;">lowest 10 scores</span>
+hwk <span style="color: #008b8b;">%&gt;%</span> arrange(desc(points)) <span style="color: #008b8b;">%&gt;%</span> slice(1:10) <span style="color: #b22222;">## </span><span style="color: #b22222;">top 10 scores</span>
+
+hwk <span style="color: #008b8b;">%&gt;%</span> slice(c(11, 13, 1000)) <span style="color: #b22222;">## </span><span style="color: #b22222;">pull out by row number</span>
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">the first score listed for each student</span>
+hwk <span style="color: #008b8b;">%&gt;%</span> group_by(SID) <span style="color: #008b8b;">%&gt;%</span> slice(1)
+hwk <span style="color: #008b8b;">%&gt;%</span> group_by(SID) <span style="color: #008b8b;">%&gt;%</span> slice(8) <span style="color: #b22222;"># </span><span style="color: #b22222;">last one listed</span>
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">sort by SID, desc(points)</span>
+hwk <span style="color: #008b8b;">%&gt;%</span> arrange(SID, desc(points))
+hwk <span style="color: #008b8b;">%&gt;%</span> group_by(SID) <span style="color: #008b8b;">%&gt;%</span> arrange(desc(points))
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #b22222;">## </span><span style="color: #b22222;">extract each student's "top 7" scores</span>
+top_7 <span style="color: #008b8b;">&lt;-</span> hwk <span style="color: #008b8b;">%&gt;%</span>
+    group_by(SID) <span style="color: #008b8b;">%&gt;%</span>
+    arrange(desc(points)) <span style="color: #008b8b;">%&gt;%</span>
+    slice(1:7) <span style="color: #008b8b;">%&gt;%</span> ungroup()
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'hwk' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(top_7)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(top_7) : object 'top_7' not found
+
+</pre>
+
+<p>
+We have 917 observations, and 917 / 7 = 131, so we can be confident that the code worked as intended.
+</p>
+
+<p>
+The final <code>ungroup()</code> operation is not strictly necessary, but it represents good practice.  When you need to perform a windowed operation, it&rsquo;s a good idea to get rid of the groupings after you are finished.  Also, for technical reasons, when you do a windowed <code>slice()</code> on a table, you should regroup the data by <code>SID</code> or you will get an error message that your data frame is &ldquo;corrupt.&rdquo;
+</p>
+
+<p>
+OK, we&rsquo;re ready to calculate a mean grade for each student.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">top_7 <span style="color: #008b8b;">%&gt;%</span> summarize(mpoints = mean(points)) <span style="color: #b22222;">## </span><span style="color: #b22222;">wrong!</span>
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'top_7' not found
+
+</pre>
+
+<p>
+Whoops, we need to re-group the data by SID.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">hwk_grades <span style="color: #008b8b;">&lt;-</span> top_7 <span style="color: #008b8b;">%&gt;%</span> 
+    group_by(SID) <span style="color: #008b8b;">%&gt;%</span> 
+    summarize(mpoints = mean(points))
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'top_7' not found
+
+</pre>
+
+<p>
+Note something odd here: there are 131 grades, but only 130 students enrolled in the course.  We&rsquo;ll revisit this mystery later.
+</p>
+
+<p>
+We&rsquo;re getting close; <code>hwk_grades</code> is <i>almost</i> what we want.  Actually it would be great if we could assign letter marks (A1&#x2013;A5, B1&#x2013;B3, &#x2026; G2) based on <code>mpoints</code> because that&rsquo;s what we need to report.  How can we do this?
+</p>
+
+<p>
+Well, we first need to round off <code>mpoints</code> and make it an <code>integer</code> type instead of a real number (type <code>numeric</code>).  Then we can join it with a marking scale, which can be loaded in from the file <code>scale.csv.</code>.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">mscale <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"scale.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">x</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">org_babel_R_eoe</td>
+</tr>
+</tbody>
+</table>
+
+<div class="org-src-container">
+<pre><code class="src src-R">hwk_grades2 <span style="color: #008b8b;">&lt;-</span> hwk_grades <span style="color: #008b8b;">%&gt;%</span>
+    mutate(points = as.integer(round(mpoints)))  
+<span style="color: #b22222;">## </span><span style="color: #b22222;">note: round() uses "go to the even number" rule for</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">dealing with .5 values</span>
+</code></pre>
+</div>
+
+<pre class="example">
+Error in eval(lhs, parent, parent) : object 'hwk_grades' not found
+
+</pre>
+
+<p>
+OK, now we&rsquo;ve made it an integer; all we need to do is combine it with the marking scale.  If we were to do this by hand, we might, for example, open <code>hwk_grades2</code> in a spreadsheet, create a new column called <code>mark</code>, and then go row-by-row through the spreadsheet, manually looking up the value in the marking scale corresponding to <code>points</code> and typing it into your new column.  Not only would this be a colossal waste of time, but it would also be error prone, especially toward the end as your attentional resources are drained by this mind-numbing task.  Wouldn&rsquo;t it be nice to have a robot assistant who could do this for you?
+</p>
+
+<p>
+You can accomplish this in R with just one simple line of code.  Note that what we need to do, in essence, is join together information across two separate tables: <code>hwk_grades2</code> and <code>mscale</code>.  We can join information using the <code>inner_join()</code> function in <code>dplyr</code>.  What we will do is called a <i>mutating join</i> because we will essentially create a new column in <code>hwk_grades2</code> containing the mark corresponding to <code>points</code>.  The code is below: try it out and see what happens.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">hwk_marks <span style="color: #008b8b;">&lt;-</span> inner_join(hwk_grades2, mscale, <span style="color: #8b2252;">"points"</span>)
+</code></pre>
+</div>
+
+<p>
+When you perform a join, you need to name the two tables you want to join, and state how you wish to combine them by specifying a <b>key</b>.  In the current case, we want to use &ldquo;points&rdquo; as a key.  In effect, <code>inner_join()</code> does automatically what you would have done if you did this task by hand: it looks at each row of <code>hwk_grades2</code> and finds the row in <code>mscale</code> that matches on <code>points</code>, and then concatenates all of the columns from <code>mscale</code> onto <code>hwk_grades2</code>.  That&rsquo;s really all it takes to accomplish this!  You can learn more about joins by reading <a href="http://r4ds.had.co.nz/relational-data.html">this chapter on Relational Data</a> of Grolemund and Wickham&rsquo;s book on R For Data Science.
+</p>
+
+<p>
+At this point, you might want to save your results to a CSV file.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">write.csv(hwk_marks, <span style="color: #8b2252;">"homework_mark.csv"</span>, row.names = <span style="color: #228b22;">FALSE</span>)
+</code></pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf41aa92" class="outline-3">
+<h3 id="orgf41aa92">Reshaping the homework table</h3>
+<div class="outline-text-3" id="text-orgf41aa92">
+<p>
+OK, one more thing before we finish with the homework grades.  Let&rsquo;s say you need to share all the homework grades for each student with another member of staff.  A table in long format with over 1,000 rows would not be very useful for this person, and they may not know how to reshape it.  So let&rsquo;s reshape the <code>hwk</code> table into wide format so there is one line per student.  To do this, we&rsquo;ll use the <code>spread()</code> function from the <code>tidyr</code> add on package.
+</p>
+
+<p>
+It&rsquo;s easy&#x2026;
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">hwk_wide <span style="color: #008b8b;">&lt;-</span> hwk <span style="color: #008b8b;">%&gt;%</span> select(-mark) <span style="color: #008b8b;">%&gt;%</span>
+    spread(HWID, points)
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">head(hwk_wide)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in head(hwk_wide) : object 'hwk_wide' not found
+
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org5a32f3c" class="outline-3">
+<h3 id="org5a32f3c">Combining homework and exam scores</h3>
+<div class="outline-text-3" id="text-org5a32f3c">
+<p>
+In this section, we will combine the homework score that we just calculated with the exam score.  This is just an easy <code>inner_join()</code>.  Then, we&rsquo;ll look at distributions, so in addition to <code>dplyr</code>, make sure you&rsquo;ve loaded in the add on package <code>ggplot2</code>.
+</p>
+
+<p>
+We will need to load in the exam scores.  Because the file includes student IDs with leading zeroes, we should remember to set <code>colClasses</code> so that the IDs aren&rsquo;t loaded in as integers.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">exam <span style="color: #008b8b;">&lt;-</span> read.csv(<span style="color: #8b2252;">"exam.csv"</span>, stringsAsFactors = <span style="color: #228b22;">FALSE</span>,
+          colClasses = c(<span style="color: #8b2252;">"character"</span>, <span style="color: #8b2252;">"character"</span>, <span style="color: #8b2252;">"integer"</span>))
+</code></pre>
+</div>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(exam)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(exam) : object 'exam' not found
+
+</pre>
+
+<p>
+OK, let&rsquo;s join this with the <code>hwk_marks</code> table.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">grades <span style="color: #008b8b;">&lt;-</span> inner_join(hwk_marks, exam, <span style="color: #8b2252;">"SID"</span>)
+
+glimpse(grades)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in inner_join(hwk_marks, exam, "SID") : 
+  object 'hwk_marks' not found
+Error in glimpse(grades) : object 'grades' not found
+
+</pre>
+
+<p>
+Note what happened here: both tables have fields named <code>points</code> and <code>mark</code>, and so in the resulting table, <code>inner_join()</code> created <code>points.x</code> for the field from <code>hwk_marks</code> and <code>points.y</code> for the one from <code>exam</code>.  We should rename them to something more useful.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">grades <span style="color: #008b8b;">&lt;-</span> inner_join(hwk_marks, exam, <span style="color: #8b2252;">"SID"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    select(SID, Homework = points.x, Exam = points.y)
+
+glimpse(grades)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in inner_join(hwk_marks, exam, "SID") : 
+  object 'hwk_marks' not found
+Error in glimpse(grades) : object 'grades' not found
+
+</pre>
+
+<p>
+OK, next thing to do: apply the weighting (60% Exam, 40% Homework).  We&rsquo;ll create a new column, <code>Final</code>, which will have the resulting composite grade.  To add a new column, we use the <code>dplyr</code> function <code>mutate()</code>.  As above, we&rsquo;ll need to round it off and convert it to an integer while we&rsquo;re at it.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">grades <span style="color: #008b8b;">&lt;-</span> inner_join(hwk_marks, exam, <span style="color: #8b2252;">"SID"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    select(SID, Homework = points.x, Exam = points.y) <span style="color: #008b8b;">%&gt;%</span>
+    mutate(Final = as.integer(round(.6 * Exam + .4 * Homework)))
+
+glimpse(grades)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in inner_join(hwk_marks, exam, "SID") : 
+  object 'hwk_marks' not found
+Error in glimpse(grades) : object 'grades' not found
+
+</pre>
+
+<p>
+Last thing: as above, we want a letter grade, so we&rsquo;ll join grades to
+the marking scale, keyed by <code>Final</code>.  Note, however, that the key we want to use has different names in the two tables: it&rsquo;s called <code>Final</code> in <code>grades</code>, but <code>points</code> in scale.  So we have to write the join argument in a way that recognizes this.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">grades <span style="color: #008b8b;">&lt;-</span> inner_join(hwk_marks, exam, <span style="color: #8b2252;">"SID"</span>) <span style="color: #008b8b;">%&gt;%</span>
+    select(SID, Homework = points.x, Exam = points.y) <span style="color: #008b8b;">%&gt;%</span>
+    mutate(Final = as.integer(round(.6 * Exam + .4 * Homework))) <span style="color: #008b8b;">%&gt;%</span>
+    inner_join(mscale, c(Final = <span style="color: #8b2252;">"points"</span>))
+</code></pre>
+</div>
+
+<pre class="example">
+Error in inner_join(hwk_marks, exam, "SID") : 
+  object 'hwk_marks' not found
+
+</pre>
+
+<div class="org-src-container">
+<pre><code class="src src-R">glimpse(grades)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in glimpse(grades) : object 'grades' not found
+
+</pre>
+
+<p>
+OK, we&rsquo;re done!  Let&rsquo;s look at the grade distributions with <code>ggplot2</code>.  In case you need a refresher, look <a href="http://talklab.psy.gla.ac.uk/r_training/the_basics/#orgheadline29">here</a>.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(grades, aes(Final)) + geom_bar() +
+    scale_x_discrete(limits = 1:22)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="grade_distribution.png" alt="grade_distribution.png" />
+</p>
+</div>
+
+<p>
+Finally, let&rsquo;s resolve the mystery of the extra student.  We have 131 homework scores but only 130 exam scores.  When we did the inner join between <code>hwk_marks</code> and <code>exam</code>, that one student was dropped because there was not corresponding info in both tables. Which student was this?  In other words, which row is in <code>hwk_marks</code> that does not appear in <code>grades</code>?
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">anti_join(hwk_marks, exam, <span style="color: #8b2252;">"SID"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in anti_join(hwk_marks, exam, "SID") : object 'hwk_marks' not found
+
+</pre>
+
+<p>
+And who is this student with ID &rsquo;4243474&rsquo;?
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">filter(users, ID.number == <span style="color: #8b2252;">"4243474"</span>)
+</code></pre>
+</div>
+
+<pre class="example">
+Error in filter(users, ID.number == "4243474") : object 'users' not found
+
+</pre>
+
+<p>
+AHA, Fiyaad Fhvn was a student who failed to turn up to the exam, but with good cause.
+</p>
+
+<p>
+We&rsquo;re done with grades; we can save <code>grades</code> to a csv file and send it off to be uploaded into the campus database so that grades can be reported.  
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcf900aa" class="outline-3">
+<h3 id="orgcf900aa">Extra practice to do on your own</h3>
+<div class="outline-text-3" id="text-orgcf900aa">
+<ol class="org-ol">
+<li><p>
+There is another, less straightforward way to accomplish the homework grading.  See if you can calculate composite scores in this other way:
+</p>
+
+<p>
+a. Create a table containing the minimum score for each student using
+	windowed filtering (<code>group_by()</code> + <code>filter()</code>).  Keep in mind that
+	individual students might have multiple assignment with the same
+	minimum score, so (a windowed) <code>slice()</code> might come in handy.
+</p>
+
+<p>
+b. Get rid of those scores from the <code>hwk</code> data frame (an
+	<code>anti_join()</code> might be helpful here!)
+</p>
+
+<p>
+c. Calculate summary statistics for each subject.
+</p></li>
+
+<li>It would be cool if the bars in the grade distribution plotted above could be color-coded based on the mark class A&#x2013;G (e.g., green for A, blue for B, red for C, and so on).  Look at the documentation for the <code>substr()</code> function (type <code>?substr</code>) to see how to pull out the first character of the <code>mark</code> field; use <code>mutate()</code> to create a new variable.  Alter the aesthetics of the call to <code>ggplot()</code> so that the bars are color coded by mark class.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: R Training</p>
+<p class="author">Author: Dale Barr</p>
+<p class="date">Created: 2018-03-07 Wed 10:34</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

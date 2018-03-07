@@ -1,0 +1,999 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2018-03-07 Wed 10:34 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Analysis of Variance in R</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Dale Barr" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2017 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../index.html"> UP </a>
+ |
+ <a accesskey="H" href="../index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">Analysis of Variance in R</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org248e693">Background</a></li>
+<li><a href="#orgc620c4c">The ANT dataset</a>
+<ul>
+<li><a href="#org5d63879">Explore the data</a></li>
+<li><a href="#org2b158c0">Analysis using <code>ezANOVA()</code></a></li>
+<li><a href="#orga26ab49">Compare to SPSS output</a></li>
+<li><a href="#org16609ed">Mixed-effects analysis</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org248e693" class="outline-2">
+<h2 id="org248e693">Background</h2>
+<div class="outline-text-2" id="text-org248e693">
+<p>
+Here are <a href="anova_slides.pdf">slides for the presentation part</a> of this session.
+</p>
+
+<p>
+There are three ways to perform analysis of variance (ANOVA) in R.
+</p>
+
+<ol class="org-ol">
+<li><code>base::aov()</code>;</li>
+<li><code>car::Anova()</code>; and</li>
+<li><code>ez::ezANOVA()</code>.</li>
+</ol>
+
+<p>
+(Note <code>xxx::yyy()</code> syntax means the function <code>yyy()</code> in package <code>xxx</code>; <code>base</code> is just base R, i.e., the function comes pre-installed with R so to use the function you don&rsquo;t have to load in any packages.)
+</p>
+
+<p>
+If you have balanced data, the factors are uncorrelated (e.g. due to random assignment), and none of your within-subject factors has more that 2 levels, you can use <code>aov()</code>.
+</p>
+
+<p>
+If your goal is to replicate the output from SPSS, then your best bet is to use <code>ez::ezANOVA()</code>, because it provides Greenhouse-Geiser correction in case you have more than three levels of a within-subject factor, and handles unbalanced data more easily.
+</p>
+
+<p>
+If your goal is to learn a flexible way of analysis that can accommodate all different types of data, forget about ANOVA and learn about mixed-effects modeling.  Just to get this off my chest, here are four reasons why you don&rsquo;t really want to use ANOVA with psychological data:
+</p>
+
+<ol class="org-ol">
+<li>Doesn&rsquo;t adequately handle more than one random factor at a time,
+and therefore, cannot properly generalize over both subjects and
+stimuli;</li>
+<li>Dealing with unbalanced data can be complicated;</li>
+<li>Requires that your dependent variable is continuous, and therefore
+is not ideal for discrete scale data or binary data;</li>
+<li>Difficult to deal with continuous predictors.</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgc620c4c" class="outline-2">
+<h2 id="orgc620c4c">The ANT dataset</h2>
+<div class="outline-text-2" id="text-orgc620c4c">
+<p>
+We will be using <i>simulated</i> data from the Attention Network Test (ANT) by Fan et al. (2002), which is included as part of the <code>ez</code> package.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">?ez::ANT
+</code></pre>
+</div>
+
+<pre class="example">
+ANT                     package:ez                     R Documentation
+
+ANT data
+
+Description:
+
+     _Simulated_ data from then Attention Network Test (see reference
+     below), consisting of 2 within-Ss variables (“cue” and “flank”), 1
+     between-Ss variable (“group”) and 2 dependent variables (response
+     time, “rt”, and whether an error was made, “error”)
+
+Usage:
+
+     data(ANT)
+     
+Format:
+
+     A data frame with 5760 observations on the following 10 variables.
+
+     ‘subnum’ a factor with levels ‘1’ ‘2’ ‘3’ ‘4’ ‘5’ ‘6’ ‘7’ ‘8’ ‘9’
+          ‘10’ ‘11’ ‘12’ ‘13’ ‘14’ ‘15’ ‘16’ ‘17’ ‘18’ ‘19’ ‘20’
+
+     ‘group’ a factor with levels ‘Control’ ‘Treatment’
+
+     ‘block’ a numeric vector
+
+     ‘trial’ a numeric vector
+
+     ‘cue’ a factor with levels ‘None’ ‘Center’ ‘Double’ ‘Spatial’
+
+     ‘flank’ a factor with levels ‘Neutral’ ‘Congruent’ ‘Incongruent’
+
+     ‘location’ a factor with levels ‘down’ ‘up’
+
+     ‘direction’ a factor with levels ‘left’ ‘right’
+
+     ‘rt’ a numeric vector
+
+     ‘error’ a numeric vector
+
+Author(s):
+
+     Michael A. Lawrence &lt;email: mike.lwrnc@gmail.com&gt;
+     Visit the ‘ez’ development site at &lt;
+     http://github.com/mike-lawrence/ez&gt;
+     for the bug/issue tracker and the link to the mailing list.
+
+References:
+
+     J Fan, BD McCandliss, T Sommer, A Raz, MI Posner (2002). Testing
+     the efficiency and independence of attentional networks. _Journal
+     of Cognitive Neuroscience_, *14*, 340-347.
+
+Examples:
+
+     data(ANT)
+     head(ANT)
+     ezPrecis(ANT)
+</pre>
+</div>
+
+<div id="outline-container-org5d63879" class="outline-3">
+<h3 id="org5d63879">Explore the data</h3>
+<div class="outline-text-3" id="text-org5d63879">
+<p>
+We need to load it in using the <code>data()</code> function.  <code>ez::ezPrecis()</code> and <code>dplyr::glimpse()</code> give useful information about the dataset.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"dplyr"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">for exploring the data</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"tidyr"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">for reshaping the data</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"ggplot2"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">for visualizing the data</span>
+<span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"ez"</span>) <span style="color: #b22222;"># </span><span style="color: #b22222;">for inferential analysis using ANOVA</span>
+
+data(ANT)
+ezPrecis(ANT)
+glimpse(ANT)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">keep only the accurate trials</span>
+ANT_acc <span style="color: #008b8b;">&lt;-</span> filter(ANT, error == 0)
+</code></pre>
+</div>
+
+<pre class="example">
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+Need help? Try the ggplot2 mailing list:
+http://groups.google.com/group/ggplot2.
+Data frame dimensions: 5760 rows, 10 columns
+             type missing values      min         max
+subnum     factor       0     20        1          20
+group      factor       0      2  Control   Treatment
+block     numeric       0      6        1           6
+trial     numeric       0     48        1          48
+cue        factor       0      4     None     Spatial
+flank      factor       0      3  Neutral Incongruent
+location   factor       0      2     down          up
+direction  factor       0      2     left       right
+rt        numeric       0   5760 179.5972    657.6986
+error     numeric       0      2        0           1
+Observations: 5,760
+Variables: 10
+$ subnum    &lt;fctr&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,...
+$ group     &lt;fctr&gt; Treatment, Treatment, Treatment, Treatment, Treatment, T...
+$ block     &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+$ trial     &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17...
+$ cue       &lt;fctr&gt; None, Center, Double, Spatial, None, Center, Double, Spa...
+$ flank     &lt;fctr&gt; Neutral, Neutral, Neutral, Neutral, Congruent, Congruent...
+$ location  &lt;fctr&gt; up, up, up, up, up, up, up, up, up, up, up, up, down, do...
+$ direction &lt;fctr&gt; left, left, left, left, left, left, left, left, left, le...
+$ rt        &lt;dbl&gt; 398.6773, 389.1822, 333.2186, 419.7640, 446.4754, 338.976...
+$ error     &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, ...
+</pre>
+
+<p>
+How many subjects do we have?
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ANT_acc <span style="color: #008b8b;">%&gt;%</span> count(subnum)
+</code></pre>
+</div>
+
+<pre class="example">
+[90m# A tibble: 20 x 2[39m
+   [1msubnum[22m     [1mn[22m
+[3m[90m   &lt;fctr&gt; &lt;int&gt;[39m[23m
+[90m 1[39m 1        264
+[90m 2[39m 2        255
+[90m 3[39m 3        261
+[90m 4[39m 4        258
+[90m 5[39m 5        251
+[90m 6[39m 6        259
+[90m 7[39m 7        259
+[90m 8[39m 8        265
+[90m 9[39m 9        261
+[90m10[39m 10       264
+[90m11[39m 11       266
+[90m12[39m 12       260
+[90m13[39m 13       256
+[90m14[39m 14       237
+[90m15[39m 15       263
+[90m16[39m 16       264
+[90m17[39m 17       260
+[90m18[39m 18       259
+[90m19[39m 19       264
+[90m20[39m 20       265
+</pre>
+
+<p>
+Let&rsquo;s see which factors are within and which are between.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ANT_acc <span style="color: #008b8b;">%&gt;%</span> count(subnum, group, cue, flank) <span style="color: #008b8b;">%&gt;%</span>
+   filter(subnum <span style="color: #008b8b;">%in%</span> c(1, 11)) <span style="color: #008b8b;">%&gt;%</span>
+   print(n = 100)
+</code></pre>
+</div>
+
+<pre class="example">
+[90m# A tibble: 24 x 5[39m
+   [1msubnum[22m [1mgroup[22m     [1mcue[22m     [1mflank[22m           [1mn[22m
+[3m[90m   &lt;fctr&gt; &lt;fctr&gt;    &lt;fctr&gt;  &lt;fctr&gt;      &lt;int&gt;[39m[23m
+[90m 1[39m 1      Treatment None    Neutral        18
+[90m 2[39m 1      Treatment None    Congruent      21
+[90m 3[39m 1      Treatment None    Incongruent    23
+[90m 4[39m 1      Treatment Center  Neutral        22
+[90m 5[39m 1      Treatment Center  Congruent      23
+[90m 6[39m 1      Treatment Center  Incongruent    23
+[90m 7[39m 1      Treatment Double  Neutral        24
+[90m 8[39m 1      Treatment Double  Congruent      21
+[90m 9[39m 1      Treatment Double  Incongruent    22
+[90m10[39m 1      Treatment Spatial Neutral        22
+[90m11[39m 1      Treatment Spatial Congruent      21
+[90m12[39m 1      Treatment Spatial Incongruent    24
+[90m13[39m 11     Control   None    Neutral        19
+[90m14[39m 11     Control   None    Congruent      23
+[90m15[39m 11     Control   None    Incongruent    23
+[90m16[39m 11     Control   Center  Neutral        23
+[90m17[39m 11     Control   Center  Congruent      24
+[90m18[39m 11     Control   Center  Incongruent    22
+[90m19[39m 11     Control   Double  Neutral        24
+[90m20[39m 11     Control   Double  Congruent      23
+[90m21[39m 11     Control   Double  Incongruent    19
+[90m22[39m 11     Control   Spatial Neutral        21
+[90m23[39m 11     Control   Spatial Congruent      22
+[90m24[39m 11     Control   Spatial Incongruent    23
+</pre>
+
+<p>
+So, we have a mixed design with one between factor (<code>group</code>) and two within factors (<code>cue</code>, <code>flank</code>).  Both of our within-subject factors have more than two levels, so we&rsquo;re going to want to correct for possible violations of sphericity (Greenhouse-Geiser).  Just to make things more fun, the data are unbalanced now that we&rsquo;ve thrown out trials with inaccurate responses.  So if we can handle these data, we can handle anything&#x2026;
+</p>
+
+<p>
+Before doing any analysis, let&rsquo;s look at the cell means.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ANT_means <span style="color: #008b8b;">&lt;-</span> ANT_acc <span style="color: #008b8b;">%&gt;%</span>
+    group_by(group, cue, flank) <span style="color: #008b8b;">%&gt;%</span>
+    summarise(mRT = mean(rt)) <span style="color: #008b8b;">%&gt;%</span> ungroup()
+</code></pre>
+</div>
+
+<pre class="example">
+       group     cue       flank      mRT
+1    Control    None     Neutral 427.9266
+2    Control    None   Congruent 429.4866
+3    Control    None Incongruent 498.9557
+4    Control  Center     Neutral 378.6429
+5    Control  Center   Congruent 380.7638
+6    Control  Center Incongruent 483.3961
+7    Control  Double     Neutral 379.5458
+8    Control  Double   Congruent 372.6635
+9    Control  Double Incongruent 473.1597
+10   Control Spatial     Neutral 340.7174
+11   Control Spatial   Congruent 343.4821
+12   Control Spatial Incongruent 411.3912
+13 Treatment    None     Neutral 428.1812
+14 Treatment    None   Congruent 426.1165
+15 Treatment    None Incongruent 495.8052
+16 Treatment  Center     Neutral 382.8072
+17 Treatment  Center   Congruent 376.5433
+18 Treatment  Center Incongruent 452.4431
+19 Treatment  Double     Neutral 369.8689
+20 Treatment  Double   Congruent 378.3121
+21 Treatment  Double Incongruent 446.6856
+22 Treatment Spatial     Neutral 339.3939
+23 Treatment Spatial   Congruent 337.8150
+24 Treatment Spatial Incongruent 414.6278
+</pre>
+
+<p>
+Plot them&#x2026;
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ggplot(ANT_means, aes(flank, mRT, colour = cue)) +
+  geom_line(aes(group = cue)) +
+  geom_point(aes(shape = cue), size = 3) +
+  facet_wrap(~group)
+</code></pre>
+</div>
+
+
+<div class="figure">
+<p><img src="ant_means.png" alt="ant_means.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2b158c0" class="outline-3">
+<h3 id="org2b158c0">Analysis using <code>ezANOVA()</code></h3>
+<div class="outline-text-3" id="text-org2b158c0">
+<p>
+So what might we expect from this plot?  Main effects of flank and cue, maybe even a three-way interaction?
+</p>
+
+<p>
+OK let&rsquo;s check out the <code>ez::ezANOVA()</code> documentation before running our function.
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">?ez::ezANOVA
+</code></pre>
+</div>
+
+<pre class="example">
+ezANOVA                   package:ez                   R Documentation
+
+Compute ANOVA
+
+Description:
+
+     This function provides easy analysis of data from factorial
+     experiments, including purely within-Ss designs (a.k.a. “repeated
+     measures”), purely between-Ss designs, and mixed
+     within-and-between-Ss designs, yielding ANOVA results, generalized
+     effect sizes and assumption checks.
+
+Usage:
+
+     ezANOVA(
+         data
+         , dv
+         , wid
+         , within = NULL
+         , within_full = NULL
+         , within_covariates = NULL
+         , between = NULL
+         , between_covariates = NULL
+         , observed = NULL
+         , diff = NULL
+         , reverse_diff = FALSE
+         , type = 2
+         , white.adjust = FALSE
+         , detailed = FALSE
+         , return_aov = FALSE
+     )
+     
+Arguments:
+
+    data: Data frame containing the data to be analyzed.
+
+      dv: Name of the column in ‘data’ that contains the dependent
+          variable. Values in this column must be numeric.
+
+     wid: Name of the column in ‘data’ that contains the variable
+          specifying the case/Ss identifier. This should be a unique
+          value per case/Ss.
+
+  within: Names of columns in ‘data’ that contain predictor variables
+          that are manipulated (or observed) within-Ss. If a single
+          value, may be specified by name alone; if multiple values,
+          must be specified as a .() list.
+
+within_full: Same as within, but intended to specify the full within-Ss
+          design in cases where the data have not already been
+          collapsed to means per condition specified by ‘within’ and
+          when ‘within’ only specifies a subset of the full design.
+
+within_covariates: Names of columns in ‘data’ that contain predictor
+          variables that are manipulated (or observed) within-Ss and
+          are to serve as covariates in the analysis. If a single
+          value, may be specified by name alone; if multiple values,
+          must be specified as a .() list.
+
+ between: Names of columns in ‘data’ that contain predictor variables
+          that are manipulated (or observed) between-Ss. If a single
+          value, may be specified by name alone; if multiple values,
+          must be specified as a .() list.
+
+between_covariates: Names of columns in ‘data’ that contain predictor
+          variables that are manipulated (or observed) between-Ss and
+          are to serve as covariates in the analysis. If a single
+          value, may be specified by name alone; if multiple values,
+          must be specified as a .() list.
+
+observed: Names of columns in ‘data’ that are already specified in
+          either ‘within’ or ‘between’ that contain predictor variables
+          that are observed variables (i.e. not manipulated). If a
+          single value, may be specified by name alone; if multiple
+          values, must be specified as a .() list. The presence of
+          observed variables affects the computation of the generalized
+          eta-squared measure of effect size reported by ‘ezANOVA’.
+
+    diff: Names of any variables to collapse to a difference score. If
+          a single value, may be specified by name alone; if multiple
+          values, must be specified as a .() list. All supplied
+          variables must be factors, ideally with only two levels
+          (especially if setting the ‘reverse_diff’ argument to TRUE).
+
+reverse_diff: Logical. If TRUE, triggers reversal of the difference
+          collapse requested by ‘diff’. Take care with variables with
+          more than 2 levels.
+
+    type: Numeric value (either ‘1’, ‘2’ or ‘3’) specifying the Sums of
+          Squares “type” to employ when data are unbalanced (eg. when
+          group sizes differ). ‘type = 2’ is the default because this
+          will yield identical ANOVA results as ‘type = 1’ when data
+          are balanced but ‘type = 2’ will additionally yield various
+          assumption tests where appropriate. When data are unbalanced,
+          users are warned that they should give special consideration
+          to the value of ‘type’. ‘type=3’ will emulate the approach
+          taken by popular commercial statistics packages like SAS and
+          SPSS, but users are warned that this approach is not without
+          criticism.
+
+white.adjust: Only affects behaviour if the design contains only
+          between-Ss predictor variables. If not FALSE, the value is
+          passed as the white.adjust argument to ‘Anova’, which
+          provides heteroscedasticity correction. See ‘Anova’ for
+          details on possible values.
+
+detailed: Logical. If TRUE, returns extra information (sums of squares
+          columns, intercept row, etc.) in the ANOVA table.
+
+return_aov: Logical. If TRUE, computes and returns an aov object
+          corresponding to the requested ANOVA (useful for computing
+          post-hoc contrasts).
+
+Details:
+
+     ANCOVA is implemented by first regressing the DV against each
+     covariate (after collapsing the data to the means of that
+     covariate's levels per subject) and subtracting from the raw data
+     the fitted values from this regression (then adding back the mean
+     to maintain scale). These regressions are computed across Ss in
+     the case of between-Ss covariates and computed within each Ss in
+     the case of within-Ss covariates.
+
+Value:
+
+     A list containing one or more of the following components:
+
+   ANOVA: A data frame containing the ANOVA results.
+
+Mauchly's Test for Sphericity: If any within-Ss variables with &gt;2
+          levels are present, a data frame containing the results of
+          Mauchly's test for Sphericity. Only reported for effects &gt;2
+          levels because sphericity necessarily holds for effects with
+          only 2 levels.
+
+Sphericity Corrections: If any within-Ss variables are present, a data
+          frame containing the Greenhouse-Geisser and Huynh-Feldt
+          epsilon values, and corresponding corrected p-values.
+
+Levene's Test for Homogeneity: If the design is purely between-Ss, a
+          data frame containing the results of Levene's test for
+          Homogeneity of variance. Note that Huynh-Feldt corrected
+          p-values where the Huynh-Feldt epsilon &gt;1 will use 1 as the
+          correction epsilon.
+
+     aov: An aov object corresponding to the requested ANOVA.
+     Some column names in the output data frames are abbreviated to
+     conserve space:
+
+       DFn         Degrees of Freedom in the numerator (a.k.a. DFeffect).                                                                
+       DFd         Degrees of Freedom in the denominator (a.k.a. DFerror).                                                               
+       SSn         Sum of Squares in the numerator (a.k.a. SSeffect).                                                                    
+       SSd         Sum of Squares in the denominator (a.k.a. SSerror).                                                                   
+       F           F-value.                                                                                                              
+       p           p-value (probability of the data given the null hypothesis).                                                          
+       p&lt;.05       Highlights p-values less than the traditional alpha level of .05.                                                     
+       ges         Generalized Eta-Squared measure of effect size (see in references below: Bakeman, 2005).                              
+       GGe         Greenhouse-Geisser epsilon.                                                                                           
+       p[GGe]      p-value after correction using Greenhouse-Geisser epsilon.                                                            
+       p[GGe]&lt;.05  Highlights p-values (after correction using Greenhouse-Geisser epsilon) less than the traditional alpha level of .05. 
+       HFe         Huynh-Feldt epsilon.                                                                                                  
+       p[HFe]      p-value after correction using Huynh-Feldt epsilon.                                                                   
+       p[HFe]&lt;.05  Highlights p-values (after correction using Huynh-Feldt epsilon) less than the traditional alpha level of .05.        
+       W           Mauchly's W statistic                                                                                                 
+      
+Warning:
+
+     Prior to running (though after obtaining running ANCOVA
+     regressions as described in the ‘details’ section), ‘dv’ is
+     collapsed to a mean for each cell defined by the combination of
+     ‘wid’ and any variables supplied to ‘within’ and/or ‘between’
+     and/or ‘diff’. Users are warned that while convenient when used
+     properly, this automatic collapsing can lead to inconsistencies if
+     the pre-collapsed data are unbalanced (with respect to cells in
+     the full design) and only the partial design is supplied to
+     ‘ezANOVA’. When this is the case, use ‘within_full’ to specify the
+     full design to ensure proper automatic collapsing.
+
+Author(s):
+
+     Michael A. Lawrence &lt;email: mike.lwrnc@gmail.com&gt;
+     Visit the ‘ez’ development site at &lt;
+     http://github.com/mike-lawrence/ez&gt;
+     for the bug/issue tracker and the link to the mailing list.
+</pre>
+
+<p>
+Note that we should be using Type III ss if we want to replicate SPSS output.
+</p>
+
+<p>
+(Note that this is using RM-ANOVA and not mixed-model ANOVA; in the latter case you would have different error terms for the different effects.)
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">rt_anova <span style="color: #008b8b;">&lt;-</span> ezANOVA(ANT_acc, rt, subnum, within = .(cue, flank),
+                    between = group, type = 3)
+
+print(rt_anova)
+</code></pre>
+</div>
+
+<pre class="example">
+Warning: Collapsing data to cell means. *IF* the requested effects are a subset of the full design, you must use the "within_full" argument, else results may be inaccurate.
+$ANOVA
+           Effect DFn DFd           F            p p&lt;.05        ges
+2           group   1  18   18.430592 4.377562e-04     * 0.07633358
+3             cue   3  54  516.605213 1.005518e-39     * 0.89662286
+5           flank   2  36 1350.598810 1.386546e-34     * 0.92710583
+4       group:cue   3  54    2.553236 6.497492e-02       0.04110445
+6     group:flank   2  36    8.768499 7.900829e-04     * 0.07627434
+7       cue:flank   6 108    5.193357 9.938494e-05     * 0.11436699
+8 group:cue:flank   6 108    6.377225 9.012515e-06     * 0.13686958
+
+$`Mauchly's Test for Sphericity`
+           Effect         W         p p&lt;.05
+3             cue 0.7828347 0.5366835      
+4       group:cue 0.7828347 0.5366835      
+5           flank 0.8812738 0.3415406      
+6     group:flank 0.8812738 0.3415406      
+7       cue:flank 0.1737053 0.1254796      
+8 group:cue:flank 0.1737053 0.1254796      
+
+$`Sphericity Corrections`
+           Effect       GGe        p[GG] p[GG]&lt;.05       HFe        p[HF]
+3             cue 0.8652559 1.115029e-34         * 1.0239520 1.005518e-39
+4       group:cue 0.8652559 7.472046e-02           1.0239520 6.497492e-02
+5           flank 0.8938738 3.763312e-31         * 0.9858964 3.964046e-34
+6     group:flank 0.8938738 1.297752e-03         * 0.9858964 8.438369e-04
+7       cue:flank 0.6022111 1.546166e-03         * 0.7721473 4.745714e-04
+8 group:cue:flank 0.6022111 3.424499e-04         * 0.7721473 7.170939e-05
+  p[HF]&lt;.05
+3         *
+4          
+5         *
+6         *
+7         *
+8         *
+</pre>
+</div>
+</div>
+
+<div id="outline-container-orga26ab49" class="outline-3">
+<h3 id="orga26ab49">Compare to SPSS output</h3>
+<div class="outline-text-3" id="text-orga26ab49">
+<p>
+First we have to reshape the data from long to wide.  Better to do this in R using <code>tidyr::spread()</code> than to try to do this in SPSS!
+</p>
+
+<div class="org-src-container">
+<pre><code class="src src-R">ANT_agg <span style="color: #008b8b;">&lt;-</span> ANT_acc <span style="color: #008b8b;">%&gt;%</span>
+  group_by(subnum, group, cue, flank) <span style="color: #008b8b;">%&gt;%</span>
+  summarise(RT = mean(rt)) <span style="color: #008b8b;">%&gt;%</span> ungroup()
+
+for_spss <span style="color: #008b8b;">&lt;-</span> ANT_agg <span style="color: #008b8b;">%&gt;%</span>
+  mutate(cond = paste(cue, flank, sep = <span style="color: #8b2252;">"_"</span>)) <span style="color: #008b8b;">%&gt;%</span>
+  select(subnum, group, cond, RT) <span style="color: #008b8b;">%&gt;%</span>
+  spread(cond, RT)
+
+write.csv(for_spss, <span style="color: #8b2252;">"for_spss.csv"</span>, row.names = <span style="color: #228b22;">FALSE</span>)
+glimpse(for_spss)
+</code></pre>
+</div>
+
+<pre class="example">
+Observations: 20
+Variables: 14
+$ subnum              &lt;fctr&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,...
+$ group               &lt;fctr&gt; Treatment, Treatment, Treatment, Treatment, Tr...
+$ Center_Congruent    &lt;dbl&gt; 368.6432, 389.7828, 367.9923, 383.2157, 394.601...
+$ Center_Incongruent  &lt;dbl&gt; 473.3917, 455.6889, 436.5402, 438.4868, 471.384...
+$ Center_Neutral      &lt;dbl&gt; 385.2220, 374.2402, 371.2286, 384.8149, 378.096...
+$ Double_Congruent    &lt;dbl&gt; 378.9103, 384.1513, 356.3303, 399.3815, 370.688...
+$ Double_Incongruent  &lt;dbl&gt; 455.3791, 432.9680, 432.6974, 445.8616, 447.052...
+$ Double_Neutral      &lt;dbl&gt; 378.9357, 356.9811, 392.3132, 370.2583, 370.638...
+$ None_Congruent      &lt;dbl&gt; 423.8810, 441.9487, 428.1394, 433.2586, 436.916...
+$ None_Incongruent    &lt;dbl&gt; 490.8676, 483.2877, 503.2587, 498.5326, 499.016...
+$ None_Neutral        &lt;dbl&gt; 433.4563, 436.4319, 428.6568, 415.5254, 429.138...
+$ Spatial_Congruent   &lt;dbl&gt; 350.1803, 337.6057, 334.5602, 342.8093, 329.854...
+$ Spatial_Incongruent &lt;dbl&gt; 407.1928, 421.0479, 431.4388, 407.0074, 418.313...
+$ Spatial_Neutral     &lt;dbl&gt; 328.0655, 339.3997, 331.3369, 320.7324, 332.479...
+</pre>
+
+<p>
+Here is how the data look:
+</p>
+
+
+<div class="figure">
+<p><img src="01_spss_data.png" alt="01_spss_data.png" />
+</p>
+</div>
+
+<p>
+And then we choose <code>Repeated Measures</code> from the analysis menu:
+</p>
+
+
+<div class="figure">
+<p><img src="02_spss_menu.png" alt="02_spss_menu.png" />
+</p>
+</div>
+
+<p>
+Define our within IVs:
+</p>
+
+
+<div class="figure">
+<p><img src="03_spss_repeated_measures.png" alt="03_spss_repeated_measures.png" />
+</p>
+</div>
+
+<p>
+Results:
+</p>
+
+
+<div class="figure">
+<p><img src="04_spss_mauchly.png" alt="04_spss_mauchly.png" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="05_spss_within.png" alt="05_spss_within.png" />
+</p>
+</div>
+
+
+<div class="figure">
+<p><img src="06_spss_between.png" alt="06_spss_between.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org16609ed" class="outline-3">
+<h3 id="org16609ed">Mixed-effects analysis</h3>
+<div class="outline-text-3" id="text-org16609ed">
+<div class="org-src-container">
+<pre><code class="src src-R"><span style="color: #008b8b;">library</span>(<span style="color: #8b2252;">"afex"</span>)
+
+<span style="color: #b22222;">## </span><span style="color: #b22222;">see ?afex::mixed</span>
+<span style="color: #b22222;">## </span><span style="color: #b22222;">NB: random-intercept-only model justified here because of</span>
+<span style="color: #b22222;">##     </span><span style="color: #b22222;">pre-aggregation of the data</span>
+mod <span style="color: #008b8b;">&lt;-</span> mixed(RT ~ group * cue * flank + (1 | subnum), ANT_agg, type = 3,
+             method = <span style="color: #8b2252;">"KR"</span>)
+
+print(mod)
+</code></pre>
+</div>
+
+<pre class="example">
+Loading required package: lme4
+Loading required package: Matrix
+
+Attaching package: ‘Matrix’
+
+The following object is masked from ‘package:tidyr’:
+
+    expand
+
+Loading required package: lsmeans
+Loading required package: estimability
+************
+Welcome to afex. For support visit: http://afex.singmann.science/
+- Functions for ANOVAs: aov_car(), aov_ez(), and aov_4()
+- Methods for calculating p-values with mixed(): 'KR', 'S', 'LRT', and 'PB'
+- 'afex_aov' and 'mixed' objects can be passed to lsmeans() for follow-up tests
+- Get and set global package options with: afex_options()
+- Set orthogonal sum-to-zero contrasts globally: set_sum_contrasts()
+- For example analyses see: browseVignettes("afex")
+************
+
+Attaching package: ‘afex’
+
+The following object is masked from ‘package:lme4’:
+
+    lmer
+Fitting one lmer() model. [DONE]
+Calculating p-values. [DONE]
+Mixed Model Anova Table (Type 3 tests, KR-method)
+
+Model: RT ~ group * cue * flank + (1 | subnum)
+Data: ANT_agg
+           Effect     df           F p.value
+1           group  1, 18   17.85 ***   .0005
+2             cue 3, 198  624.48 ***  &lt;.0001
+3           flank 2, 198 1373.60 ***  &lt;.0001
+4       group:cue 3, 198      3.09 *     .03
+5     group:flank 2, 198    8.92 ***   .0002
+6       cue:flank 6, 198    4.65 ***   .0002
+7 group:cue:flank 6, 198    5.71 ***  &lt;.0001
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘+’ 0.1 ‘ ’ 1
+</pre>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: R Training</p>
+<p class="author">Author: Dale Barr</p>
+<p class="date">Created: 2018-03-07 Wed 10:34</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2016-02-25 Thu 15:05 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="viewport" content="width=device-width, initial-scale=1" />
+<title>New lab: Probability and Probability distributions</title>
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="Dale Barr" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/my_css.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2013 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="org-div-home-and-up">
+ <a accesskey="h" href="../index.html"> UP </a>
+ |
+ <a accesskey="H" href="../index.html"> HOME </a>
+</div><div id="content">
+<h1 class="title">New lab: Probability and Probability distributions</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgheadline1">Background</a></li>
+<li><a href="#orgheadline2">A discrete distributions: The binomial distribution</a>
+<ul>
+<li><a href="#orgheadline3">Empirical distributions</a></li>
+<li><a href="#orgheadline4">Theoretical distributions</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline5">A continuous distribution: The normal distribution</a>
+<ul>
+<li><a href="#orgheadline6">z-scores</a></li>
+</ul>
+</li>
+<li><a href="#orgheadline7"><span class="todo nilTODO">TODO</span> Sampling distributions for test statistics</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgheadline1" class="outline-2">
+<h2 id="orgheadline1">Background</h2>
+<div class="outline-text-2" id="text-orgheadline1">
+<p>
+For this session, we will build up a lab exercise on probability and probability distributions.  An understanding of probability distributions and essential part of stats training, and currently this basic topic is underrepresented in the lab exercises.  The idea is to start out with a basic random process that is easy for students to understand and simulate in R (coin flipping), which will introduce students to idea of a discrete distribution (the binomial distribution).  We will then proceed onto continuous distributions (the standard normal distribution) and z-scores, before talking about sampling distributions for test statistics.  This last concept is essential for understanding inferential statistics.
+</p>
+
+<p>
+In the process, we will learn about how to write simple functions in R, how to simulate data, and various distribution functions (density, quantile, etc.).
+</p>
+
+<p>
+We will be using the <code>ggplot2</code> add-on package for generating histograms, so let&rsquo;s load that in at the top of the script.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="color: #ff00ff;">library</span>(<span style="color: #00ff00;">"ggplot2"</span>)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h2 id="orgheadline2">A discrete distributions: The binomial distribution</h2>
+<div class="outline-text-2" id="text-orgheadline2">
+<p>
+Let&rsquo;s start by simulating a coin flip in R.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">sample(c(<span style="color: #00ff00;">"heads"</span>, <span style="color: #00ff00;">"tails"</span>), 1)
+</pre>
+</div>
+
+<pre class="example">
+[1] "tails"
+</pre>
+
+<p>
+Here we&rsquo;re using the function <code>sample()</code>, which takes a random sample from the vector supplied as the first argument, <code>x</code>.  In this case, the first argument has the two possible states of a coin: heads or tails.  The second argument to <code>sample()</code> is the number of samples that we want to draw, which in this case is &rsquo;1&rsquo; for a single coin flip.  If we wanted to flip the coin 10 times, we would type:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">sample(c(<span style="color: #00ff00;">"heads"</span>, <span style="color: #00ff00;">"tails"</span>), 10)
+</pre>
+</div>
+
+<pre class="example">
+Error in sample.int(length(x), size, replace, prob) : 
+  cannot take a sample larger than the population when 'replace = FALSE'
+</pre>
+
+<p>
+Whoops!  We already see a problem.  The default for <code>sample()</code> is to sample <i>without replacement</i>, which means that once a value is drawn, it is removed from the vector.  What we need to do instead is to sample <i>with replacement</i>, which we can do just by overriding the default for the third argument <code>replace</code>, which by default is set to <code>FALSE</code>.  (Note that the options in <code>x</code> are sampled with equal probability by default, but this can be overridden by changing the fourth argument, <code>prob</code>.)
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">sample(c(<span style="color: #00ff00;">"heads"</span>, <span style="color: #00ff00;">"tails"</span>), 10, <span style="color: #00ff00;">TRUE</span>)
+</pre>
+</div>
+
+<pre class="example">
+ [1] "tails" "heads" "tails" "tails" "heads" "tails" "heads" "heads" "tails"
+[10] "heads"
+</pre>
+
+<p>
+OK, let&rsquo;s play a game where we count the number of heads that we get on \(k\) coin flips (we will call each coin flip a single &rsquo;trial&rsquo;, like a trial in an experiment).  Let&rsquo;s store the result of the call to <code>sample()</code> in a variable, and then we will use a programming trick to count the number of heads.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">k <span style="color: #ff00ff;">&lt;-</span> 10
+flips <span style="color: #ff00ff;">&lt;-</span> sample(c(<span style="color: #00ff00;">"heads"</span>, <span style="color: #00ff00;">"tails"</span>), k, <span style="color: #00ff00;">TRUE</span>)
+nheads <span style="color: #ff00ff;">&lt;-</span> sum(flips == <span style="color: #00ff00;">"heads"</span>)
+</pre>
+</div>
+
+<p>
+The second statement here counts the number of heads using the <code>sum()</code> function.  If you look at what the statement within <code>sum()</code> does on its own:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">flips == <span style="color: #00ff00;">"heads"</span>
+</pre>
+</div>
+
+<pre class="example">
+[1] FALSE FALSE  TRUE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE
+</pre>
+
+<p>
+you can see that it is just comparing each value of <code>flips</code> to <code>heads</code> and returning <code>TRUE</code> if it&rsquo;s heads, and <code>FALSE</code> otherwise.  Because <code>TRUE</code> is equivalent to a &rsquo;1&rsquo; and <code>FALSE</code> is equivalent to a &rsquo;0&rsquo; in R, taking the <code>sum()</code> of the logical vector will return the number of heads (from 0 to <i>k</i>).  This programming trick turns out to be a very useful way to count things in R.  (We could also have used the function <code>table()</code> to count things, but in this case the output of <code>table()</code> is less useful for our purposes.)
+</p>
+</div>
+
+<div id="outline-container-orgheadline3" class="outline-3">
+<h3 id="orgheadline3">Empirical distributions</h3>
+<div class="outline-text-3" id="text-orgheadline3">
+<p>
+OK, we&rsquo;re going to start doing a lot of coin flipping, counting up how many heads we get and then creating distributions of the number of <i>heads</i> in <i>k</i> flips.  Since we&rsquo;re going to be doing the above steps over and over, it&rsquo;s best if we wrap the code we&rsquo;ve written into a function.  This way we don&rsquo;t have to type those steps every time we want to flip a coin and count up the number of heads.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="color: #0000ff; font-weight: bold;">head_count</span> <span style="color: #ff00ff;">&lt;-</span> <span style="color: #00ffff; font-weight: bold;">function</span>(k) {
+    flips <span style="color: #ff00ff;">&lt;-</span> sample(c(<span style="color: #00ff00;">"heads"</span>, <span style="color: #00ff00;">"tails"</span>), k, <span style="color: #00ff00;">TRUE</span>)
+    sum(flips == <span style="color: #00ff00;">"heads"</span>)
+}
+</pre>
+</div>
+
+<p>
+Now let&rsquo;s play around with the function.
+</p>
+
+<pre class="example">
+&gt; head_count(10)
+[1] 4
+&gt; head_count(10)
+[1] 3
+&gt; head_count(10)
+[1] 5
+&gt; head_count(10)
+[1] 4
+&gt; head_count(10)
+[1] 5
+&gt; head_count(100)
+[1] 44
+&gt; head_count(1000)
+[1] 513
+&gt; head_count(10000)
+[1] 5020
+</pre>
+
+<p>
+OK, let&rsquo;s take it a step further and ask the question: what is the probability of getting 0 heads in 10 flips?  1 head in 10 flips?  2 heads in 10 flips?  &#x2026; 10 heads in 10 flips?
+</p>
+
+<p>
+One way to find out is to <i>estimate</i> these probabilities through simulation.  Let&rsquo;s say that a single &rsquo;experiment&rsquo; consists of flipping the coin 10 times (i.e., one call to the function <code>head_count()</code>.  What we can do is to repeat this &rsquo;experiment&rsquo; a large number of times, keeping track of the number of heads we got each time, and then plotting the results in a distribution.  To do this, we will use the function <code>replicate()</code>.  The first argument to replicate is the number of times we want to repeat a command; the second argument is the command to be repeated.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">replicate(100, head_count(10))
+</pre>
+</div>
+
+<pre class="example">
+ [1] 2 3 3 3 3 9 4 6 5 4 4 3 4 5 5 8 4 6 4 6 4 5 3 6 3 6 5 2 4 7 7 5 4 3 3 3 5
+[38] 5 6 6 4 5 4 8 4 5 3 5 4 3 3 6 7 5 4 9 5 5 3 5 3 5 6 5 4 4 6 7 6 5 4 7 6 5
+[75] 5 7 4 5 8 3 4 6 4 6 6 4 5 5 6 6 4 4 3 4 3 5 6 5 7 3
+</pre>
+
+<p>
+We can plot a histogram of the experiment outcomes using <code>ggplot2</code>.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">heads <span style="color: #ff00ff;">&lt;-</span> replicate(1000, head_count(10))
+hist(heads, col = <span style="color: #00ff00;">'lightblue'</span>)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="coin_hist1.png" alt="coin_hist1.png" />
+</p>
+</div>
+
+<p>
+Note that we can estimate the probability of each of the 11 outcomes (0:10) by counting them up and dividing through by the number of experiments.  In this case we will count up using the function <code>table()</code>.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">table(heads)
+</pre>
+</div>
+
+<pre class="example">
+heads
+  0   1   2   3   4   5   6   7   8   9  10 
+  2  11  32 118 222 234 220 107  40  12   2
+</pre>
+
+<div class="org-src-container">
+
+<pre class="src src-R">probs <span style="color: #ff00ff;">&lt;-</span> table(heads) / 1000
+probs
+</pre>
+</div>
+
+<pre class="example">
+heads
+    0     1     2     3     4     5     6     7     8     9    10 
+0.002 0.011 0.032 0.118 0.222 0.234 0.220 0.107 0.040 0.012 0.002
+</pre>
+
+<div class="org-src-container">
+
+<pre class="src src-R">barplot(probs)
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="coin_hist2.png" alt="coin_hist2.png" />
+</p>
+</div>
+
+<p>
+Now that we have estimated probabilities of different experimental outcomes, we can use these probabilities to answer questions like?
+</p>
+
+<ul class="org-ul">
+<li><p>
+What is the probability of getting exactly 5 heads on 10 flips?
+</p>
+
+<p>
+ This was estimated as 0.234
+from our simulation.
+</p></li>
+
+<li><p>
+What is the probability of getting at most 2 heads on 10 flips?
+</p>
+
+<p>
+For this we just add up \(P(Y = 0) + P(Y = 1) + P(Y = 2)\), which, from our simulations, yields 0.045
+</p></li>
+</ul>
+
+
+<p>
+These probabilities are just estimates, and if we ran the experiment again, we&rsquo;d get different results!  We need something more definitive.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgheadline4" class="outline-3">
+<h3 id="orgheadline4">Theoretical distributions</h3>
+<div class="outline-text-3" id="text-orgheadline4">
+<p>
+Fortunately, mathematicians have determined how all the possible outcomes for a &rsquo;coin flipping&rsquo; type experiment can be enumerated such that the probabilities can be calculated exactly.  This is quantified in the form of the <a href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</a> (Wikipedia).
+</p>
+
+
+<div class="figure">
+<p><img src="bdist.png" alt="bdist.png" />
+</p>
+</div>
+
+<p>
+Note that you can plot your own version of the theoretical distribution using:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">barplot(dbinom(0:10, 10, .5), names.arg = 0:10)
+</pre>
+</div>
+
+<p>
+The binomial distribution is determined by three parameters: \(N\), the number of trials (which was 10 in the case of our coin flipping experiment), \(k\), the number of &rsquo;successes&rsquo; over all \(N\) trials (e.g., getting exactly 5 heads on 10 flips), and \(p\), the probability of success on any one trial (e.g., the probability of a coin flip turning up heads, which is .5).
+</p>
+
+<p>
+R provides various functions for working with the binomial distribution:
+</p>
+
+<pre class="example">
+The Binomial Distribution
+
+Description:
+
+     Density, distribution function, quantile function and random
+     generation for the binomial distribution with parameters ‘size’
+     and ‘prob’.
+
+     This is conventionally interpreted as the number of ‘successes’ in
+     ‘size’ trials.
+
+Usage:
+
+     dbinom(x, size, prob, log = FALSE)
+     pbinom(q, size, prob, lower.tail = TRUE, log.p = FALSE)
+     qbinom(p, size, prob, lower.tail = TRUE, log.p = FALSE)
+     rbinom(n, size, prob)
+     
+Arguments:
+
+    x, q: vector of quantiles.
+
+       p: vector of probabilities.
+
+       n: number of observations. If ‘length(n) &gt; 1’, the length is
+          taken to be the number required.
+
+    size: number of trials (zero or more).
+
+    prob: probability of success on each trial.
+
+log, log.p: logical; if TRUE, probabilities p are given as log(p).
+
+lower.tail: logical; if TRUE (default), probabilities are P[X &lt;= x],
+          otherwise, P[X &gt; x].
+</pre>
+
+<p>
+Note that the four functions are all named in the form <code>*binom</code> where the <code>*</code> is either <code>d</code>, <code>p</code>, <code>q</code>, and <code>r</code>.  
+</p>
+
+<ul class="org-ul">
+<li>The <code>d</code> in <code>dbinom()</code> stands for <i>density</i>.  <code>dbinom()</code> returns the probability of <code>x</code> successes given <code>size</code> trials and probability of success <code>prob</code>.</li>
+
+<li>The <code>p</code> in <code>pbinom()</code> gives the <i>distribution</i> function.  <code>pbinom</code> returns the probability of getting \(X \le x\) successes given <code>size</code> trials and probability of success <code>prob</code>.  It is the typical function that you would use to get something corresponding to a &rsquo;p-value&rsquo; (which is the reason it starts with a &rsquo;p&rsquo;).</li>
+
+<li>The <code>q</code> in <code>qbinom()</code> is the &rsquo;quantile&rsquo; function; it returns the number of successes cutting off <code>p</code> probability, given <code>size</code> trials and a probability of success <code>prob</code>.</li>
+
+<li>The <code>r</code> in <code>rbinom()</code> is a random generation function.  It will randomly generate <code>n</code> experiments, each having <code>size</code> trials and <code>prob</code> probability of success, and return the number of successes in each.</li>
+</ul>
+
+<p>
+These things are confusing, so play around with them until you fully understand how they work.  Note that this system of density, distribution, quantile, and random generation functions is repeated through <i>all different kinds of probability distributions</i> in R.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left"><code>dnorm()</code></td>
+<td class="org-left"><code>pnorm()</code></td>
+<td class="org-left"><code>qnorm()</code></td>
+<td class="org-left"><code>rnorm()</code></td>
+<td class="org-left">Normal Distribution</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>dt()</code></td>
+<td class="org-left"><code>pt()</code></td>
+<td class="org-left"><code>qt()</code></td>
+<td class="org-left"><code>rt()</code></td>
+<td class="org-left">Student's (Gosset's) \(t\) distribution</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>dchisq()</code></td>
+<td class="org-left"><code>pchisq()</code></td>
+<td class="org-left"><code>qchisq()</code></td>
+<td class="org-left"><code>rchisq()</code></td>
+<td class="org-left">Chi-square distribution</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>df()</code></td>
+<td class="org-left"><code>pf()</code></td>
+<td class="org-left"><code>qf()</code></td>
+<td class="org-left"><code>rf()</code></td>
+<td class="org-left">\(F\) distribution</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+If you master these functions, you&rsquo;ll never need to look up a critical value in a statistical table ever again!
+</p>
+
+<p>
+To sharpen our understanding, let&rsquo;s try these functions out to answer the two questions above:
+</p>
+
+<ul class="org-ul">
+<li><p>
+What is the probability of getting exactly 5 heads on 10 flips?
+</p>
+<div class="org-src-container">
+
+<pre class="src src-R">dbinom(5, 10, .5)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.2460938
+</pre>
+
+<p>
+Note that this is just giving us the height of this blue bar:
+</p>
+
+
+<div class="figure">
+<p><img src="dbinom_5.png" alt="dbinom_5.png" />
+</p>
+</div></li>
+
+<li><p>
+What is the probability of getting at most 2 heads on 10 flips?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">pbinom(2, 10, .5)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.0546875
+</pre>
+
+<p>
+Note that there is another way we could have done this:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">probs <span style="color: #ff00ff;">&lt;-</span> dbinom(0:2, 10, .5)
+probs
+sum(probs)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.0009765625 0.0097656250 0.0439453125
+[1] 0.0546875
+</pre>
+
+<p>
+Note that in this latter strategy, we are just adding up the heights of the three blue bars.
+</p>
+
+
+<div class="figure">
+<p><img src="dbinom_2.png" alt="dbinom_2.png" />
+</p>
+</div></li>
+
+<li><p>
+What is the probability of getting 7 or more heads on 10 flips?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">sum(dbinom(7:10, 10, .5))
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.171875
+</pre>
+
+<p>
+or, equivalently:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">pbinom(6, 10, .5, lower.tail = <span style="color: #00ff00;">FALSE</span>)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.171875
+</pre>
+
+<p>
+What pbinom gives us is the probability of getting 0 to 6 successes (the lower tail of the distribution, given by the pink bars).  The total area under the curve for a theoretical distribution sums to 1.  If we want the upper tail instead, we set <code>lower.tail</code> to <code>FALSE</code>, and this will give us the probability for the blue bars.
+</p>
+
+
+<div class="figure">
+<p><img src="dbinom_tail.png" alt="dbinom_tail.png" />
+</p>
+</div></li>
+</ul>
+
+<p>
+OK now let&rsquo;s consider a scenario in which you&rsquo;d use the quantile function <code>qbinom()</code> You suspect that the coin is biased against heads.  Your null hypothesis is that the coin is not biased against heads (\(P(heads) = .5\)).  You are going to run a single experiment to test your hypothesis, with 10 trials.  What is the minimum number of &rsquo;successes&rsquo; that is acceptable, if you want to keep your long-run error rate for this type of experiment at .05?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">qbinom(.05, 10, .5)
+</pre>
+</div>
+
+<pre class="example">
+[1] 2
+</pre>
+
+<p>
+So if you got less than two heads, you would reject the null that the coin was unbiased against heads.
+</p>
+
+<p>
+Ten trials is probably far too few.  What would your cutoff be if you ran 100 trials?  1000?  10000?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">qbinom(.05, c(100, 1000, 10000), .5)
+</pre>
+</div>
+
+<pre class="example">
+[1]   42  474 4918
+</pre>
+
+<p>
+The same, but what if we wanted to be more conservative, and reduce our error rate to .01?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">qbinom(.01, c(10, 100, 1000, 10000), .5)
+</pre>
+</div>
+
+<pre class="example">
+[1]    1   38  463 4884
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline5" class="outline-2">
+<h2 id="orgheadline5">A continuous distribution: The normal distribution</h2>
+<div class="outline-text-2" id="text-orgheadline5">
+<p>
+As the above illustrates, probability distributions are useful for estimating probabilities and determining cutoff values in hypothesis testing.  However, many of the variables we are interested in are continuous rather than discrete.  Many such variables (IQ, height, weight) tend to show a <i>normal</i> distribution such as illustrated below.
+</p>
+
+
+<div class="figure">
+<p><img src="nd.png" alt="nd.png" />
+</p>
+</div>
+
+<p>
+According to the Scottish Health Survey (2008), the mean height for 16-24 year old Scottish males is 176.2&nbsp;cm with a standard deviation of 6.748; for females the mean is 163.8&nbsp;cm with a standard deviation of 6.931.  Assuming height is normally distributed (a safe assumption), here are the (estimated) height distributions for 16-24 year olds in Scotland:
+</p>
+
+
+<div class="figure">
+<p><img src="shs_height.png" alt="shs_height.png" />
+</p>
+</div>
+
+<p>
+Unlike with discrete distributions, it does not really make sense to ask for the probability of an exact value.  Instead, we can ask for the probability that a value falls within a particular range \((x_1, x_2\)), \(P(x_1 < X < x_2)\).
+</p>
+
+<p>
+So, we can ask:
+</p>
+
+<ul class="org-ul">
+<li><p>
+What is the probability that a 16-24 yo Scottish male is at least 185cm tall?  Note that we are asking for the area shaded in blue:
+</p>
+
+
+<div class="figure">
+<p><img src="shs_height1.png" alt="shs_height1.png" />
+</p>
+</div>
+
+<p>
+There are two ways to answer this question.  The easy way is just to use the <code>pnorm()</code> function, specifying the mean and SD as the second and third arguments.  We want the upper tail, so <code>lower.tail</code> should be set to <code>FALSE</code>.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">pnorm(185, 176.2, 6.748, lower.tail = <span style="color: #00ff00;">FALSE</span>)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.09610143
+</pre></li>
+</ul>
+</div>
+
+<div id="outline-container-orgheadline6" class="outline-3">
+<h3 id="orgheadline6">z-scores</h3>
+<div class="outline-text-3" id="text-orgheadline6">
+<p>
+The other way to do it, which is good to know, is using \(z\) scores.  A z score expresses a score relative to the <i>standard normal distribution</i>, which is a normal distribution that has a mean of zero and a standard deviation of 1.  The formula for a \(z\) score is:
+</p>
+
+<p>
+\(z = \frac{X - \mu}{\sigma}\)
+</p>
+
+<p>
+Where \(\mu\) is the population mean and \(\sigma\) is the population SD.  
+</p>
+
+<p>
+So a 185cm tall male has a \(z\) score of 1.304
+</p>
+
+
+<p>
+Using the <code>pnorm()</code> function with <code>lower.tail</code> set to <code>FALSE</code>:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">pnorm( (185 - 176.2) / 6.748, lower.tail = <span style="color: #00ff00;">FALSE</span>)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.09610143
+</pre>
+
+<p>
+What is useful about z scores is that it gives us a good way to compare different distributions.  For instance, we can compare a tall male to a tall female to answer the question, which one of these people is taller for their gender?  Angus is 198cm tall, and Fiona is 188cm tall.  Which one is more freakishly tall?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">z_f <span style="color: #ff00ff;">&lt;-</span> (188 - 163.8) / 6.931
+z_a <span style="color: #ff00ff;">&lt;-</span> (198 - 176.2) / 6.748
+
+c(Angus = z_a, Fiona = z_f)
+</pre>
+</div>
+
+<pre class="example">
+ 
+  Angus    Fiona 
+3.230587 3.491560
+</pre>
+
+<p>
+So Fiona, being about 3.5SD above the mean for her gender, is taller for her gender than Angus is for his.
+</p>
+
+<p>
+OK, let&rsquo;s imagine that Fiona refuses to date any men who are shorter than her (i.e., men who are 188cm or below have no chance).  What proportion of men would be eligible?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R"><span style="color: #ff0000;">## </span><span style="color: #ff0000;">a z-score for a man as tall as Fiona is:</span>
+z_male <span style="color: #ff00ff;">&lt;-</span> (188 - 176.2) / 6.748
+z_male
+</pre>
+</div>
+
+<pre class="example">
+[1] 1.748666
+</pre>
+
+<p>
+So a male as tall as her is about 1.7 SDs above the mean for his gender.  What proportion of young Scottish men are at least this height?
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-R">pnorm(z_male, lower.tail = <span style="color: #00ff00;">FALSE</span>)
+</pre>
+</div>
+
+<pre class="example">
+[1] 0.04017436
+</pre>
+
+<p>
+Only about 4%!  She might want to move to the Netherlands!
+</p>
+
+<p>
+Question: Fiona decides to be less picky.  If she wanted to increase the pool of eligible men to 10% of the male population, what height cutoff should she put in her dating profile?
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgheadline7" class="outline-2">
+<h2 id="orgheadline7"><span class="todo TODO">TODO</span> Sampling distributions for test statistics</h2>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Date: R Training</p>
+<p class="author">Author: Dale Barr</p>
+<p class="date">Created: 2016-02-25 Thu 15:05</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
